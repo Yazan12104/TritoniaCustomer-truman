@@ -2,63 +2,54 @@ import React from "react";
 import { View, Text, Image } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { MarketerDashboardScreen } from "../features/dashboard/screens/MarketerDashboardScreen";
+import { CustomerHomeScreen } from "../features/dashboard/screens/CustomerHomeScreen";
 import { ProductsListScreen } from "../features/products/screens/ProductsListScreen";
 import { ProductDetailsScreen } from "../features/products/screens/ProductDetailsScreen";
 import { CartScreen } from "../features/orders/screens/CartScreen";
 import { CheckoutScreen } from "../features/orders/screens/CheckoutScreen";
-import { CustomersListScreen } from "../features/customers/screens/CustomersListScreen";
-import { AddCustomerScreen } from "../features/customers/screens/AddCustomerScreen";
-import { CustomerDetailsScreen } from "../features/customers/screens/CustomerDetailsScreen";
 import { MyOrdersScreen } from "../features/orders/screens/MyOrdersScreen";
 import { OrderDetailsScreen } from "../features/orders/screens/OrderDetailsScreen";
-import { MyWalletScreen } from "../features/wallet/screens/MyWalletScreen";
-import { SalaryRequestScreen } from "../features/wallet/screens/SalaryRequestScreen";
-import { TransactionsScreen } from "../features/wallet/screens/TransactionsScreen";
 import { useThemeColors } from "../shared/theme/colors";
 import { SettingsScreen } from "../features/settings/screens/SettingsScreen";
 import { ProfileScreen } from "../features/settings/screens/ProfileScreen";
 import { AboutAppScreen } from "../features/settings/screens/AboutAppScreen";
 import {
-  MarketerTabParamList,
-  MarketerDashboardStackParamList,
-  CatalogBrowserStackParamList,
+  CustomerTabParamList,
+  CustomerHomeStackParamList,
+  ProductsStackParamList,
   CartCheckoutStackParamList,
-  MyCustomersStackParamList,
-  MyOrdersStackParamList,
-  WalletStackParamList,
+  OrdersStackParamList,
   SettingsStackParamList,
 } from "./types";
 
-const Tab = createBottomTabNavigator<MarketerTabParamList>();
+const Tab = createBottomTabNavigator<CustomerTabParamList>();
 
-const DashboardStack =
-  createNativeStackNavigator<MarketerDashboardStackParamList>();
-const DashboardStackScreen = () => (
-  <DashboardStack.Navigator
+const HomeStack = createNativeStackNavigator<CustomerHomeStackParamList>();
+const HomeStackScreen = () => (
+  <HomeStack.Navigator
     screenOptions={{ headerShown: false, fullScreenGestureEnabled: true }}
   >
-    <DashboardStack.Screen
-      name="MarketerDashboardScreen"
-      component={MarketerDashboardScreen}
+    <HomeStack.Screen
+      name="CustomerHomeScreen"
+      component={CustomerHomeScreen}
     />
-  </DashboardStack.Navigator>
+  </HomeStack.Navigator>
 );
 
-const CatalogStack = createNativeStackNavigator<CatalogBrowserStackParamList>();
-const CatalogStackScreen = () => (
-  <CatalogStack.Navigator
+const ProductsStack = createNativeStackNavigator<ProductsStackParamList>();
+const ProductsStackScreen = () => (
+  <ProductsStack.Navigator
     screenOptions={{ headerShown: false, fullScreenGestureEnabled: true }}
   >
-    <CatalogStack.Screen
-      name="CatalogBrowserScreen"
+    <ProductsStack.Screen
+      name="ProductsListScreen"
       component={ProductsListScreen}
     />
-    <CatalogStack.Screen
+    <ProductsStack.Screen
       name="ProductDetailsScreen"
       component={ProductDetailsScreen}
     />
-  </CatalogStack.Navigator>
+  </ProductsStack.Navigator>
 );
 
 const CartStack = createNativeStackNavigator<CartCheckoutStackParamList>();
@@ -71,27 +62,7 @@ const CartStackScreen = () => (
   </CartStack.Navigator>
 );
 
-const CustomersStack = createNativeStackNavigator<MyCustomersStackParamList>();
-const CustomersStackScreen = () => (
-  <CustomersStack.Navigator
-    screenOptions={{ headerShown: false, fullScreenGestureEnabled: true }}
-  >
-    <CustomersStack.Screen
-      name="CustomersListScreen"
-      component={CustomersListScreen}
-    />
-    <CustomersStack.Screen
-      name="AddCustomerScreen"
-      component={AddCustomerScreen}
-    />
-    <CustomersStack.Screen
-      name="CustomerDetailsScreen"
-      component={CustomerDetailsScreen}
-    />
-  </CustomersStack.Navigator>
-);
-
-const OrdersStack = createNativeStackNavigator<MyOrdersStackParamList>();
+const OrdersStack = createNativeStackNavigator<OrdersStackParamList>();
 const OrdersStackScreen = () => (
   <OrdersStack.Navigator
     screenOptions={{ headerShown: false, fullScreenGestureEnabled: true }}
@@ -102,23 +73,6 @@ const OrdersStackScreen = () => (
       component={OrderDetailsScreen}
     />
   </OrdersStack.Navigator>
-);
-
-const WalletStack = createNativeStackNavigator<WalletStackParamList>();
-const WalletStackScreen = () => (
-  <WalletStack.Navigator
-    screenOptions={{ headerShown: false, fullScreenGestureEnabled: true }}
-  >
-    <WalletStack.Screen name="MyWalletScreen" component={MyWalletScreen} />
-    <WalletStack.Screen
-      name="SalaryRequestScreen"
-      component={SalaryRequestScreen}
-    />
-    <WalletStack.Screen
-      name="TransactionsScreen"
-      component={TransactionsScreen}
-    />
-  </WalletStack.Navigator>
 );
 
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
@@ -132,7 +86,7 @@ const SettingsStackScreen = () => (
   </SettingsStack.Navigator>
 );
 
-export const MarketerNavigator = () => {
+export const CustomerNavigator = () => {
   const colors = useThemeColors();
 
   return (
@@ -164,8 +118,8 @@ export const MarketerNavigator = () => {
       }}
     >
       <Tab.Screen
-        name="DashboardTab"
-        component={DashboardStackScreen}
+        name="HomeTab"
+        component={HomeStackScreen}
         options={{
           title: "الرئيسية",
           tabBarIcon: ({ color }) => (
@@ -178,8 +132,8 @@ export const MarketerNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="CatalogTab"
-        component={CatalogStackScreen}
+        name="ProductsTab"
+        component={ProductsStackScreen}
         options={{
           title: "المنتجات",
           tabBarIcon: ({ color }) => (
@@ -206,20 +160,6 @@ export const MarketerNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="CustomersTab"
-        component={CustomersStackScreen}
-        options={{
-          title: "العملاء",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/team.png")}
-              style={{ width: 22, height: 22, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
         name="OrdersTab"
         component={OrdersStackScreen}
         options={{
@@ -227,20 +167,6 @@ export const MarketerNavigator = () => {
           tabBarIcon: ({ color }) => (
             <Image
               source={require("../../assets/icons/orders.png")}
-              style={{ width: 25, height: 25, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="WalletTab"
-        component={WalletStackScreen}
-        options={{
-          title: "المحفظة",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/wallet.png")}
               style={{ width: 25, height: 25, tintColor: color }}
               resizeMode="contain"
             />

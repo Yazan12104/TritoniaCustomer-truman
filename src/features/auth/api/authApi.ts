@@ -51,7 +51,7 @@ export const authApi = {
 					password: credentials.password
 				};
 				const response = await apiClient.post('/auth/login', payload);
-				
+
 				if (__DEV__) {
 					console.log("Login API Response:", JSON.stringify(response.data, null, 2));
 				}
@@ -62,6 +62,51 @@ export const authApi = {
 		} catch (error: any) {
 			console.error("Login Error:", error);
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "بيانات الاعتماد غير صالحة");
+		}
+	},
+
+	register: async (data: { first_name: string; last_name: string; phone: string; password: string }): Promise<AuthResponse> => {
+		try {
+			if (USE_MOCK_API) {
+				return await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve({
+							user: {
+								id: '2',
+								name: `${data.first_name} ${data.last_name}`,
+								phone: data.phone,
+								role: 'CUSTOMER',
+							},
+							accessToken: 'mock-jwt-token-customer',
+							refreshToken: 'mock-refresh-token-customer',
+						});
+					}, 1000);
+				});
+			} else {
+				const response = await apiClient.post('/auth/register', data);
+
+				if (__DEV__) {
+					console.log("Register API Response:", JSON.stringify(response.data, null, 2));
+				}
+
+				if (response.data.success === false) throw new Error(response.data.error || response.data.message || 'Registration failed');
+				
+				// Backend returns: { id, phone, role, token }
+				const responseData = response.data.body || response.data.data;
+				return {
+					user: {
+						id: responseData.id || 'Unknown',
+						name: `${data.first_name} ${data.last_name}`,
+						phone: responseData.phone || data.phone,
+						role: responseData.role || 'CUSTOMER',
+					},
+					accessToken: responseData.token || response.data.token || '',
+					refreshToken: responseData.token || response.data.token || '',
+				};
+			}
+		} catch (error: any) {
+			console.error("Register Error:", error);
+			throw new Error(error.response?.data?.error || error.response?.data?.message || "فشل إنشاء الحساب");
 		}
 	},
 

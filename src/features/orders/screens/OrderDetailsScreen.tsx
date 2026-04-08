@@ -62,7 +62,7 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -110,7 +110,7 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -189,12 +189,12 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             {order.status === "PENDING"
               ? "قيد الانتظار"
               : order.status === "APPROVED"
-              ? "تمت الموافقة"
-              : order.status === "REJECTED"
-              ? "مرفوض"
-              : order.status === "CANCELLED"
-              ? "ملغي"
-              : order.status}
+                ? "تمت الموافقة"
+                : order.status === "REJECTED"
+                  ? "مرفوض"
+                  : order.status === "CANCELLED"
+                    ? "ملغي"
+                    : order.status}
           </Text>
         </View>
       </View>
@@ -297,7 +297,7 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
         </View>
       )}
 
-      {order.status === "APPROVED" &&
+      {/* {order.status === "APPROVED" &&
         order.transactions &&
         order.transactions.length > 0 && (
           <View
@@ -328,9 +328,9 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
               </View>
             ))}
           </View>
-        )}
+        )} */}
 
-      {order.status === "PENDING" &&
+      {/* {order.status === "PENDING" &&
         order.preview_transactions &&
         order.preview_transactions.length > 0 && (
           <View
@@ -364,7 +364,7 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
               * هذه القيم تقريبية وسيتم تأكيدها عند الموافقة.
             </Text>
           </View>
-        )}
+        )} */}
 
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
@@ -382,11 +382,29 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             {order.total_price.toLocaleString()} ل.س
           </Text>
         </View>
-        <View style={[styles.summaryRow, styles.soldRow, { borderTopColor: colors.border }]}>
-          <Text style={[styles.summaryLabel, styles.soldLabel, { color: colors.primary }]}>
+        <View
+          style={[
+            styles.summaryRow,
+            styles.soldRow,
+            { borderTopColor: colors.border },
+          ]}
+        >
+          <Text
+            style={[
+              styles.summaryLabel,
+              styles.soldLabel,
+              { color: colors.primary },
+            ]}
+          >
             سعر البيع الإجمالي:
           </Text>
-          <Text style={[styles.summaryValue, styles.soldValue, { color: colors.primary }]}>
+          <Text
+            style={[
+              styles.summaryValue,
+              styles.soldValue,
+              { color: colors.primary },
+            ]}
+          >
             {order.sold_price.toLocaleString()} ل.س
           </Text>
         </View>
@@ -409,7 +427,10 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
           {canReject && (
             <>
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: colors.success }]}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.success },
+                ]}
                 onPress={handleApprove}
                 disabled={actionLoading}
               >
@@ -446,10 +467,10 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             {order.status === "APPROVED"
               ? "✅ تمت الموافقة على هذا الطلب"
               : order.status === "REJECTED"
-              ? "❌ تم رفض هذا الطلب"
-              : order.status === "CANCELLED"
-              ? "🚫 تم إلغاء هذا الطلب"
-              : ""}
+                ? "❌ تم رفض هذا الطلب"
+                : order.status === "CANCELLED"
+                  ? "🚫 تم إلغاء هذا الطلب"
+                  : ""}
           </Text>
         </View>
       )}

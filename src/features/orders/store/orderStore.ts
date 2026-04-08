@@ -19,7 +19,7 @@ interface OrderState {
   setCustomer: (customer: Customer | null) => void;
   setBranchId: (branchId: string | null) => void;
   fetchOrders: (params?: any) => Promise<void>;
-  createOrder: (input: Omit<CreateOrderInput, 'customer_id' | 'branch_id'>) => Promise<string | null>;
+  createOrder: (input: Omit<CreateOrderInput, 'customer_id' | 'branch_id'> & { customer_id?: string; branch_id?: string }) => Promise<string | null>;
   resetError: () => void;
   clearSelection: () => void;
 }
@@ -37,7 +37,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   },
 
   setCustomer: (customer) => set({ selectedCustomer: customer }),
-  
+
   setBranchId: (branchId) => set({ selectedBranchId: branchId }),
 
   fetchOrders: async (params) => {
@@ -48,14 +48,14 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         limit: params?.limit || 20,
         ...params
       });
-      set({ 
-        orders: result.orders, 
-        pagination: { 
-          total: result.total, 
-          page: params?.page || 1, 
-          pages: result.pages 
+      set({
+        orders: result.orders,
+        pagination: {
+          total: result.total,
+          page: params?.page || 1,
+          pages: result.pages
         },
-        isLoading: false 
+        isLoading: false
       });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
@@ -64,14 +64,19 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
   createOrder: async (input) => {
     const { selectedCustomer, selectedBranchId } = get();
-    
-    if (!selectedCustomer) {
-      set({ error: 'يرجى اختيار العميل أولاً' }); // Arabic for "Please select a customer first"
+
+    // Allow explicit customer_id/branch_id from input (for customer app)
+    // or fall back to selectedCustomer/selectedBranchId (for marketer app)
+    const customerId = input.customer_id || selectedCustomer?.id;
+    const branchId = input.branch_id || selectedBranchId;
+
+    if (!customerId) {
+      set({ error: 'يرجى تحديد العميل' });
       return null;
     }
 
-    if (!selectedBranchId) {
-      set({ error: 'يرجى اختيار الفرع' }); // Arabic for "Please select branch"
+    if (!branchId) {
+      set({ error: 'يرجى اختيار الفرع' });
       return null;
     }
 
@@ -79,8 +84,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     try {
       const result = await ordersApi.createOrder({
         ...input,
-        customer_id: selectedCustomer.id,
-        branch_id: selectedBranchId,
+        customer_id: customerId,
+        branch_id: branchId,
       });
       set({ isLoading: false });
       return result.id;
@@ -91,6 +96,6 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   },
 
   resetError: () => set({ error: null }),
-  
+
   clearSelection: () => set({ selectedCustomer: null, selectedBranchId: null }),
 }));

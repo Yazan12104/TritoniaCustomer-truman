@@ -1,91 +1,34 @@
 import { create } from 'zustand';
-import { Branch, Governorate } from '../types';
-import { branchesApi } from '../api/branchesApi';
+import { apiClient } from '../../../core/api/apiClient';
+
+export interface Branch {
+  id: string;
+  name: string;
+  governorate?: string;
+  is_active?: boolean;
+}
 
 interface BranchesState {
   branches: Branch[];
-  governorates: Governorate[];
   isLoading: boolean;
-  error: string | null;
-  updateBranchStatus: (id: string, status: 'ACTIVE' | 'INACTIVE') => Promise<void>;
-  fetchGovernorates: () => Promise<void>;
-  createGovernorate: (name: string) => Promise<void>;
-  fetchBranches: (governorateId?: string) => Promise<void>;
-  createBranch: (branchData: Omit<Branch, 'id'>) => Promise<void>;
-  updateBranch: (id: string, branchData: Partial<Branch>) => Promise<void>;
-
+  fetchBranches: () => Promise<void>;
 }
 
-export const useBranchesStore = create<BranchesState>((set, get) => ({
+export const useBranchesStore = create<BranchesState>((set) => ({
   branches: [],
-  governorates: [],
   isLoading: false,
-  error: null,
-  updateBranchStatus: async (id, status) => {
-    set({ isLoading: true, error: null });
-    try {
-      await branchesApi.updateBranchStatus(id, status);
-      await get().fetchBranches(); // تحديث القائمة
-      set({ isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'فشل تحديث حالة الفرع', isLoading: false });
-      throw error;
-    }
-  },
-  fetchGovernorates: async () => {
-    try {
-      const governorates = await branchesApi.getGovernorates();
-      set({ governorates, error: null });
-    } catch (error: any) {
-      set({ error: error.message || 'فشل جلب المحافظات' });
-    }
-  },
 
-  createGovernorate: async (name: string) => {
-    set({ isLoading: true, error: null });
+  fetchBranches: async () => {
+    set({ isLoading: true });
     try {
-      await branchesApi.createGovernorate(name);
-      // Refresh both because createGovernorate also creates a default branch in backend
-      const [govs, brs] = await Promise.all([
-        branchesApi.getGovernorates(),
-        branchesApi.getBranches()
-      ]);
-      set({ governorates: govs, branches: brs, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'فشل إضافة المحافظة', isLoading: false });
-      throw error;
+      const response = await apiClient.get('/branches');
+      const result = response.data.body || response.data.data;
+      // Backend returns paginated response: { data: [...], pagination: {...} }
+      const branches = result?.data || result;
+      set({ branches: Array.isArray(branches) ? branches : [], isLoading: false });
+    } catch (error) {
+      console.error('Failed to fetch branches:', error);
+      set({ branches: [], isLoading: false });
     }
   },
-
-  fetchBranches: async (governorateId?: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      const branches = await branchesApi.getBranches(governorateId);
-      set({ branches, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message || 'فشل جلب الفروع', isLoading: false });
-    }
-  },
-
-  createBranch: async (branchData: Omit<Branch, 'id'>) => {
-    set({ isLoading: true, error: null });
-    try {
-      await branchesApi.createBranch(branchData);
-      await get().fetchBranches(); // Refresh list
-    } catch (error: any) {
-      set({ error: error.message || 'فشل إضافة الفرع', isLoading: false });
-      throw error;
-    }
-  },
-
-  updateBranch: async (id: string, branchData: Partial<Branch>) => {
-    set({ isLoading: true, error: null });
-    try {
-      await branchesApi.updateBranch(id, branchData);
-      await get().fetchBranches(); // Refresh list
-    } catch (error: any) {
-      set({ error: error.message || 'فشل تحديث الفرع', isLoading: false });
-      throw error;
-    }
-  }
 }));

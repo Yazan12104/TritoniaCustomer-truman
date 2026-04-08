@@ -38,7 +38,8 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
   const canAddToCart =
     user?.role === "SUPERVISOR" ||
     user?.role === "GENERAL_SUPERVISOR" ||
-    user?.role === "MARKETER";
+    user?.role === "MARKETER" ||
+    user?.role === "CUSTOMER";
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -68,6 +69,8 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
             user?.role === "GENERAL_SUPERVISOR"
           ) {
             navigation.navigate("StoreTab", { screen: "CartScreen" });
+          } else if (user?.role === "CUSTOMER") {
+            navigation.navigate("CartTab", { screen: "CartScreen" });
           } else {
             navigation.navigate("CartTab");
           }

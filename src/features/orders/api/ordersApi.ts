@@ -40,17 +40,19 @@ export const ordersApi = {
     return response.data.data;
   },
 
-  getOrders: async (params?: { 
-    page?: number; 
-    limit?: number; 
-    status?: string; 
+  getOrders: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
     time_filter?: string;
     branch_id?: string;
     marketer_id?: string;
     start_date?: string;
     end_date?: string;
   }): Promise<{ orders: Order[]; total: number; pages: number }> => {
-    const response = await apiClient.get('/orders', { params });
+    // Customers can ONLY use page/limit params (backend forbids advanced filters)
+    const safeParams = params ? { page: params.page, limit: params.limit } : {};
+    const response = await apiClient.get('/orders', { params: safeParams });
     // Backend returns { success: true, body: { data: [], pagination: { total, ... } } }
     const result = response.data.body;
     return {

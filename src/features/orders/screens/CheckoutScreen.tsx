@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -15,17 +15,15 @@ import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
 import { useCartStore } from "../store/cartStore";
 import { OrderSummary } from "../components/OrderSummary";
-import { useCustomerStore } from "../../customers/store/customerStore";
 import { useOrderStore } from "../store/orderStore";
-import { useBranchesStore } from "../../branches/store/branchesStore";
+import { useAuthStore } from "../../auth/store/authStore";
+import { useBranchesStore, Branch } from "../../branches/store/branchesStore";
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const { cartItems, total, clearCart } = useCartStore();
-  const { customers, fetchCustomers } = useCustomerStore();
+  const { user } = useAuthStore();
   const { branches, fetchBranches } = useBranchesStore();
   const {
-    selectedCustomer,
-    setCustomer,
     selectedBranchId,
     setBranchId,
     createOrder,
@@ -35,28 +33,15 @@ export const CheckoutScreen = ({ navigation }: any) => {
   } = useOrderStore();
   const colors = useThemeColors();
 
-  const [soldPrice, setSoldPrice] = useState(total.toString());
   const [notes, setNotes] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetchCustomers();
     fetchBranches();
-    setSoldPrice(total.toString());
-  }, [total]);
-
-  const filteredCustomers = useMemo(() => {
-    if (!searchQuery) return customers;
-    return customers.filter(
-      (c) =>
-        c.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.phone?.includes(searchQuery)
-    );
-  }, [customers, searchQuery]);
+  }, []);
 
   const handlePlaceOrder = async () => {
-    if (!selectedCustomer) {
-      Alert.alert("تنبيه", "يرجى اختيار العميل أولاً.");
+    if (!user?.id) {
+      Alert.alert("تنبيه", "يرجى تسجيل الدخول أولاً.");
       return;
     }
     if (!selectedBranchId) {
@@ -64,10 +49,11 @@ export const CheckoutScreen = ({ navigation }: any) => {
       return;
     }
 
-    const finalSoldPrice = parseFloat(soldPrice) || total;
-
+    // For customers, use their own ID as customer_id
     const orderId = await createOrder({
-      sold_price: finalSoldPrice,
+      customer_id: user.id,
+      branch_id: selectedBranchId,
+      sold_price: total,
       notes: notes,
       items: cartItems.map((item) => ({
         product_id: item.productId,
@@ -77,7 +63,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
     if (orderId) {
       clearCart();
-      Alert.alert("نجاح", "تم إرسال الطلب بنجاح!", [
+      Alert.alert("نجاح", "تم إرسال طلبك بنجاح!", [
         { text: "حسناً", onPress: () => navigation.navigate("OrdersTab") },
       ]);
     }
@@ -112,70 +98,12 @@ export const CheckoutScreen = ({ navigation }: any) => {
         ]}
       >
         <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
-          1. اختيار العميل
-        </Typography>
-        <TextInput
-          style={[
-            styles.searchInput,
-            {
-              backgroundColor: colors.background,
-              borderColor: colors.border,
-              color: colors.text,
-            },
-          ]}
-          placeholder="بحث عن عميل..."
-          placeholderTextColor={colors.textLight}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          textAlign="right"
-        />
-        <ScrollView style={styles.listContainer} nestedScrollEnabled={true}>
-          {filteredCustomers.map((customer) => (
-            <TouchableOpacity
-              key={customer.id}
-              style={[
-                styles.listItem,
-                { borderBottomColor: colors.border },
-                selectedCustomer?.id === customer.id && [
-                  styles.listItemSelected,
-                  { backgroundColor: colors.primary + "15" },
-                ],
-              ]}
-              onPress={() => setCustomer(customer)}
-            >
-              <Text
-                style={[
-                  styles.itemName,
-                  { color: colors.text },
-                  selectedCustomer?.id === customer.id && [
-                    styles.itemNameSelected,
-                    { color: colors.primary },
-                  ],
-                ]}
-              >
-                {customer.full_name}
-              </Text>
-              <Text style={[styles.itemSubtitle, { color: colors.textLight }]}>
-                {customer.phone}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View
-        style={[
-          styles.section,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-        ]}
-      >
-        <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
-          2. اختيار الفرع
+          1. اختيار الفرع
         </Typography>
         <ScrollView style={styles.listContainer} nestedScrollEnabled={true}>
           {branches
-            .filter((b) => b.is_active !== false)
-            .map((branch) => (
+            .filter((b: Branch) => b.is_active !== false)
+            .map((branch: Branch) => (
               <TouchableOpacity
                 key={branch.id}
                 style={[
@@ -217,32 +145,8 @@ export const CheckoutScreen = ({ navigation }: any) => {
         ]}
       >
         <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
-          3. تفاصيل السعر والملاحظات
+          2. ملاحظات على الطلب
         </Typography>
-        <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            سعر البيع الاجمالي (للمسوق):
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.background,
-                borderColor: colors.border,
-                color: colors.text,
-              },
-            ]}
-            keyboardType="numeric"
-            value={soldPrice}
-            onChangeText={setSoldPrice}
-            placeholder="أدخل سعر البيع..."
-            placeholderTextColor={colors.textLight}
-            textAlign="right"
-          />
-          <Text style={[styles.hint, { color: colors.textLight }]}>
-            السعر الاجمالي الأصلي: {total} ل.س
-          </Text>
-        </View>
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: colors.text }]}>ملاحظات:</Text>
           <TextInput
@@ -267,7 +171,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
       </View>
 
       <View style={styles.summaryContainer}>
-        <OrderSummary subtotal={total} total={parseFloat(soldPrice) || total} />
+        <OrderSummary subtotal={total} total={total} />
       </View>
 
       <TouchableOpacity

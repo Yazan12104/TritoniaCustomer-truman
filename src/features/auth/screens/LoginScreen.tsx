@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import { Typography } from "../../../shared/components/Typography";
 import { useThemeColors } from "../../../shared/theme/colors";
@@ -14,7 +15,11 @@ import { LoginForm } from "../components/LoginForm";
 import { useAuthStore } from "../store/authStore";
 import { authApi } from "../api/authApi";
 
-export const LoginScreen = () => {
+interface LoginScreenProps {
+  onNavigateToRegister?: () => void;
+}
+
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }) => {
   const { setAuth, setLoading, setError, isLoading, error } = useAuthStore();
   const colors = useThemeColors();
 
@@ -76,6 +81,19 @@ export const LoginScreen = () => {
               isLoading={isLoading}
               error={error}
             />
+
+            {onNavigateToRegister && (
+              <View style={styles.registerLinkContainer}>
+                <Typography variant="body" color={colors.textLight}>
+                  ليس لديك حساب؟
+                </Typography>
+                <TouchableOpacity onPress={onNavigateToRegister}>
+                  <Typography variant="body" color={colors.primary} style={styles.registerLink}>
+                    إنشاء حساب جديد
+                  </Typography>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -117,5 +135,16 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 8,
     borderWidth: 1,
+  },
+  registerLinkContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: spacing.l,
+    gap: spacing.xs,
+  },
+  registerLink: {
+    fontWeight: "bold",
+    textDecorationLine: "underline",
   },
 });

@@ -26,7 +26,9 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       const unreadCount = notifications.filter(n => !n.isRead).length;
       set({ notifications, unreadCount, isLoading: false });
     } catch (error: any) {
-      set({ error: error.message || 'فشل جلب الإشعارات', isLoading: false });
+      console.warn('Failed to fetch notifications:', error.message);
+      // Don't fail completely, just keep empty list
+      set({ notifications: [], unreadCount: 0, isLoading: false });
     }
   },
 

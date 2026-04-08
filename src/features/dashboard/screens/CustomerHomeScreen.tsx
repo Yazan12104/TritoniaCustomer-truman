@@ -2,42 +2,42 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
-  Text,
+  SafeAreaView,
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  Text,
 } from "react-native";
 import { Typography } from "../../../shared/components/Typography";
+import { useAuthStore } from "../../auth/store/authStore";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
 import { dashboardApi, StatItem } from "../api/dashboardApi";
 
-export const TeamDashboardScreen = () => {
-  const [loading, setLoading] = useState(true);
+export const CustomerHomeScreen = () => {
+  const { user } = useAuthStore();
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const colors = useThemeColors();
   const [stats, setStats] = useState({
-    profits: 0,
     lastOrders: [] as StatItem[],
-    mostOrderingCustomers: [] as StatItem[],
+    mostSoldProducts: [] as StatItem[],
   });
 
   const fetchStats = async () => {
+    setLoading(true);
     try {
-      const [profits, orders, customers] = await Promise.all([
-        dashboardApi.getEmployeeProfits(),
-        dashboardApi.getEmployeeLastOrders(),
-        dashboardApi.getEmployeeMostOrderingCustomers(),
+      const [orders, products] = await Promise.all([
+        dashboardApi.getCustomerLastOrders(),
+        dashboardApi.getCustomerMostSoldProducts(),
       ]);
 
       setStats({
-        profits:
-          typeof profits === "number" ? profits : parseFloat(profits) || 0,
         lastOrders: orders,
-        mostOrderingCustomers: customers,
+        mostSoldProducts: products,
       });
     } catch (e) {
-      console.log("Failed to fetch team stats", e);
+      console.log("Failed to fetch customer stats", e);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -59,9 +59,7 @@ export const TeamDashboardScreen = () => {
     labelKey: string,
     valueKey: string,
     valueSuffix: string = "",
-    secondaryLabelKey?: string,
   ) => {
-    // Calculate max value for progress bar normalization
     const maxValue =
       data.length > 0
         ? Math.max(...data.map((item) => Number(item[valueKey]) || 0))
@@ -106,7 +104,6 @@ export const TeamDashboardScreen = () => {
                   },
                 ]}
               >
-                {/* Progress Bar Background */}
                 <View
                   style={[
                     styles.progressBar,
@@ -119,7 +116,7 @@ export const TeamDashboardScreen = () => {
                 />
 
                 <View style={styles.rowContent}>
-                  <View style={styles.labelContainer}>
+                  <View style={styles.labelWrapper}>
                     <Text
                       style={[
                         styles.rowLabel,
@@ -133,22 +130,9 @@ export const TeamDashboardScreen = () => {
                       {index === 0 && <Text style={{ fontSize: 13 }}>⭐ </Text>}
                       {index + 1}. {item[labelKey] || "غير متوفر"}
                     </Text>
-                    {secondaryLabelKey && item[secondaryLabelKey] && (
-                      <Text
-                        style={[
-                          styles.secondaryLabel,
-                          { color: colors.textLight },
-                        ]}
-                      >
-                        {item[secondaryLabelKey]}
-                      </Text>
-                    )}
                   </View>
                   <Text style={[styles.rowValue, { color: colors.primary }]}>
-                    {typeof item[valueKey] === "number"
-                      ? item[valueKey].toLocaleString()
-                      : item[valueKey]}{" "}
-                    {valueSuffix}
+                    {value.toLocaleString()} {valueSuffix}
                   </Text>
                 </View>
               </View>
@@ -160,23 +144,25 @@ export const TeamDashboardScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View
         style={[
           styles.header,
           { backgroundColor: colors.surface, borderBottomColor: colors.border },
         ]}
       >
-        <Typography variant="h2" color={colors.text}>
-          لوحة تحكم المشرف
+        <Typography variant="h2" color={colors.primary}>
+          الرئيسية
         </Typography>
-        <Text style={[styles.subtext, { color: colors.textLight }]}>
-          إحصائيات مبيعاتك وعمولات الفريق
-        </Text>
+        <Typography variant="body" color={colors.textLight}>
+          مرحباً {user?.name}
+        </Typography>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -190,61 +176,28 @@ export const TeamDashboardScreen = () => {
           <ActivityIndicator
             size="large"
             color={colors.primary}
-            style={styles.loader}
+            style={{ marginTop: spacing.xxl }}
           />
         ) : (
-          <>
-            <View
-              style={[
-                styles.profitCard,
-                {
-                  backgroundColor: colors.isDark
-                    ? colors.success + "10"
-                    : colors.surface,
-                  borderColor: colors.isDark
-                    ? colors.success + "30"
-                    : colors.success + "40",
-                  shadowColor: colors.success,
-                },
-              ]}
-            >
-              <View style={styles.profitHeader}>
-                <Typography variant="body" color={colors.textLight}>
-                  إجمالي الأرباح المشتركة
-                </Typography>
-                <Text style={{ fontSize: 24 }}>🤝</Text>
-              </View>
-              <Typography
-                variant="h1"
-                color={colors.success}
-                style={styles.profitAmount}
-              >
-                {stats.profits.toLocaleString()}{" "}
-                <Text style={styles.currencySymbol}>ل.س</Text>
-              </Typography>
-            </View>
-
-            <View style={styles.gridContainer}>
-              {renderStatCard(
-                "العملاء الأكثر طلباً",
-                stats.mostOrderingCustomers,
-                "name",
-                "orders_count",
-                "طلب",
-              )}
-              {renderStatCard(
-                "آخر الطلبات",
-                stats.lastOrders,
-                "customer_name",
-                "total_sold_price",
-                "ل.س",
-                "status",
-              )}
-            </View>
-          </>
+          <View style={styles.gridContainer}>
+            {renderStatCard(
+              "آخر طلباتك",
+              stats.lastOrders,
+              "created_at",
+              "total_sold_price",
+              "ل.س",
+            )}
+            {renderStatCard(
+              "أكثر المنتجات طلباً",
+              stats.mostSoldProducts,
+              "name",
+              "total_quantity",
+              "قطعة",
+            )}
+          </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -257,59 +210,27 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xxl,
     borderBottomWidth: 1,
   },
-  subtext: {
-    marginTop: spacing.xs,
-    textAlign: "right",
-  },
-  scrollContent: {
+  content: {
     padding: spacing.m,
     paddingBottom: spacing.xxxl,
-  },
-  loader: {
-    marginTop: spacing.xxl,
-  },
-  profitCard: {
-    padding: spacing.l,
-    borderRadius: spacing.l,
-    marginBottom: spacing.m,
-    borderWidth: 1,
-    alignItems: "center",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  profitHeader: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.s,
-    marginBottom: spacing.s,
-  },
-  profitAmount: {
-    fontWeight: "bold",
-    fontSize: 28,
-  },
-  currencySymbol: {
-    fontSize: 16,
-    fontWeight: "normal",
-  },
-  card: {
-    padding: spacing.m,
-    borderRadius: spacing.m,
-    marginBottom: spacing.m,
-    borderWidth: 1,
-    width: "100%", // تغيير من 48% إلى 100%
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-    overflow: "hidden",
   },
   gridContainer: {
     flexDirection: "column",
     flexWrap: "wrap",
     justifyContent: "space-between",
+  },
+  card: {
+    padding: spacing.m,
+    borderRadius: spacing.m,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: spacing.m,
+    borderWidth: 1,
+    width: "100%",
+    overflow: "hidden",
   },
   cardTitle: {
     marginBottom: spacing.m,
@@ -323,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.s,
     borderBottomWidth: 1,
-    minHeight: 48,
+    minHeight: 44,
   },
   progressBar: {
     position: "absolute",
@@ -340,20 +261,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
     paddingHorizontal: spacing.xs,
   },
-  labelContainer: {
+  labelWrapper: {
     flex: 1,
-    alignItems: "flex-end",
     marginLeft: spacing.s,
   },
   rowLabel: {
     fontSize: 12,
     textAlign: "right",
-  },
-  secondaryLabel: {
-    fontSize: 10,
-    marginTop: 2,
-    textAlign: "right",
-    opacity: 0.8,
   },
   rowValue: {
     fontWeight: "bold",

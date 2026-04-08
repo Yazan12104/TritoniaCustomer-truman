@@ -14,22 +14,6 @@ import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing, radii } from "../../../shared/theme/spacing";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "مدير النظام",
-  BRANCH_MANAGER: "مدير فرع",
-  GENERAL_SUPERVISOR: "مشرف عام",
-  SUPERVISOR: "مشرف",
-  MARKETER: "مسوق",
-};
-
-const ROLE_ICONS: Record<string, string> = {
-  ADMIN: "shield-crown",
-  BRANCH_MANAGER: "office-building",
-  GENERAL_SUPERVISOR: "account-tie",
-  SUPERVISOR: "account-supervisor",
-  MARKETER: "bullhorn",
-};
-
 export const ProfileScreen = ({ navigation }: any) => {
   const { user, updateProfile, isLoading } = useAuthStore();
   const colors = useThemeColors();
@@ -86,9 +70,6 @@ export const ProfileScreen = ({ navigation }: any) => {
     }
   };
 
-  const role = user?.role || "";
-  const roleLabel = ROLE_LABELS[role] || role;
-  const roleIcon = ROLE_ICONS[role] || "account";
   const initials = (user?.name || "?")
     .split(" ")
     .map((n) => n[0])
@@ -161,24 +142,6 @@ export const ProfileScreen = ({ navigation }: any) => {
         >
           <Text style={[styles.avatarText, { color: colors.background }]}>
             {initials}
-          </Text>
-        </View>
-        <View
-          style={[
-            styles.roleBadge,
-            {
-              backgroundColor: colors.primary + "15",
-              borderColor: colors.primary + "30",
-            },
-          ]}
-        >
-          <MaterialCommunityIcons
-            name={roleIcon as any}
-            size={14}
-            color={colors.primary}
-          />
-          <Text style={[styles.roleText, { color: colors.primary }]}>
-            {roleLabel}
           </Text>
         </View>
       </View>
@@ -298,24 +261,6 @@ export const ProfileScreen = ({ navigation }: any) => {
 
         <InfoRow icon="phone" label="رقم الهاتف" value={user?.phone || "—"} />
 
-        <InfoRow icon="briefcase" label="الدور الوظيفي" value={roleLabel} />
-
-        {user?.branch_id && (
-          <InfoRow
-            icon="office-building-marker"
-            label="الفرع"
-            value={user.branch_name || "غير محدد"}
-          />
-        )}
-
-        {user?.employee_id && (
-          <InfoRow
-            icon="badge-account"
-            label="رقم الموظف"
-            value={user.employee_id.slice(0, 8) + "..."}
-          />
-        )}
-
         <View style={[styles.section, { marginTop: spacing.l }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             تغيير كلمة المرور
@@ -420,16 +365,6 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   avatarText: { fontSize: 32, fontWeight: "bold" },
-  roleBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.m,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.l,
-    gap: spacing.xs,
-    borderWidth: 1,
-  },
-  roleText: { fontWeight: "700", fontSize: 13 },
 
   section: { gap: spacing.s },
   sectionTitle: {

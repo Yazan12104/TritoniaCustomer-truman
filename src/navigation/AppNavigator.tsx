@@ -2,10 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useAuthStore } from '../features/auth/store/authStore';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AdminNavigator } from './AdminNavigator';
-import { BranchManagerNavigator } from './BranchManagerNavigator';
-import { SupervisorNavigator } from './SupervisorNavigator';
-import { MarketerNavigator } from './MarketerNavigator';
+import { CustomerNavigator } from './CustomerNavigator';
 import { NotificationsScreen } from '../features/notifications/screens/NotificationsScreen';
 import { NotificationDetailsScreen } from '../features/notifications/screens/NotificationDetailsScreen';
 import { RootAppStackParamList, NotificationsStackParamList } from './types';
@@ -26,15 +23,8 @@ const RoleNavigator = () => {
   if (!user) return null;
 
   switch (user.role) {
-    case 'ADMIN':
-      return <AdminNavigator />;
-    case 'BRANCH_MANAGER':
-      return <BranchManagerNavigator />;
-    case 'GENERAL_SUPERVISOR':
-    case 'SUPERVISOR':
-      return <SupervisorNavigator />;
-    case 'MARKETER':
-      return <MarketerNavigator />;
+    case 'CUSTOMER':
+      return <CustomerNavigator />;
     default:
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

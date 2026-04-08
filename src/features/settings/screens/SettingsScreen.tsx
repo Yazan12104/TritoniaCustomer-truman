@@ -9,14 +9,6 @@ import { spacing, radii } from "../../../shared/theme/spacing";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeStore } from "../../../shared/store/themeStore";
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "مدير النظام",
-  BRANCH_MANAGER: "مدير فرع",
-  GENERAL_SUPERVISOR: "مشرف عام",
-  SUPERVISOR: "مشرف",
-  MARKETER: "مسوق",
-};
-
 export const SettingsScreen = () => {
   const { logout, user } = useAuthStore();
   const navigation = useNavigation<NavigationProp<any>>();
@@ -56,9 +48,6 @@ export const SettingsScreen = () => {
               <Text style={[styles.profileName, { color: colors.text }]}>
                 {user?.name || "المستخدم"}
               </Text>
-              <Text style={[styles.profileRole, { color: colors.primary }]}>
-                {ROLE_LABELS[user?.role || ""] || user?.role}
-              </Text>
               <Text style={[styles.profilePhone, { color: colors.textLight }]}>
                 {user?.phone}
               </Text>
@@ -82,32 +71,6 @@ export const SettingsScreen = () => {
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
-          {user?.role === "BRANCH_MANAGER" && (
-            <>
-              <SettingsRow
-                icon="account-plus"
-                label="إضافة موظف"
-                onPress={() => navigation.navigate("CreateEmployeeScreen")}
-              />
-              <SettingsRow
-                icon="cash-clock"
-                label="إدارة طلبات الراتب"
-                onPress={() => navigation.navigate("ManageSalaryRequestsScreen")}
-              />
-            </>
-          )}
-
-          {(user?.role === "SUPERVISOR" ||
-            user?.role === "GENERAL_SUPERVISOR") && (
-            <>
-              <SettingsRow
-                icon="wallet-outline"
-                label="المحفظة المالية"
-                onPress={() => navigation.navigate("MyWalletScreen")}
-              />
-            </>
-          )}
-
           <SettingsRow
             icon="account-circle-outline"
             label="الملف الشخصي"
@@ -252,7 +215,6 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 20, fontWeight: "bold" },
   profileInfo: { flex: 1, alignItems: "flex-end" },
   profileName: { fontSize: 16, fontWeight: "700" },
-  profileRole: { fontSize: 13, fontWeight: "600", marginTop: 2 },
   profilePhone: { fontSize: 12, marginTop: 2 },
 
   sectionLabel: {

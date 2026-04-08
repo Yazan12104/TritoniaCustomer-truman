@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthState>()(
 			},
 		}),
 		{
-			name: 'auth-storage',
+			name: 'auth-storage-customer',
 			storage: createJSONStorage(() => AsyncStorage),
 			partialize: (state) => ({
 				user: state.user,

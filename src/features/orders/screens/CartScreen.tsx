@@ -13,19 +13,10 @@ import { spacing } from "../../../shared/theme/spacing";
 import { useCartStore } from "../store/cartStore";
 import { CartItemCard } from "../components/CartItemCard";
 import { OrderSummary } from "../components/OrderSummary";
-import { useAuthStore } from "../../auth/store/authStore";
 
 export const CartScreen = ({ navigation }: any) => {
   const { cartItems, subtotal, total } = useCartStore();
-  const { user } = useAuthStore();
   const colors = useThemeColors();
-
-  const getProductsTabName = () => {
-    if (user?.role === "SUPERVISOR" || user?.role === "GENERAL_SUPERVISOR") {
-      return "StoreTab";
-    }
-    return "CatalogTab";
-  };
 
   if (cartItems.length === 0) {
     return (
@@ -39,16 +30,7 @@ export const CartScreen = ({ navigation }: any) => {
         </Typography>
         <TouchableOpacity
           style={[styles.browseButton, { backgroundColor: colors.primary }]}
-          onPress={() => {
-            if (
-              user?.role === "SUPERVISOR" ||
-              user?.role === "GENERAL_SUPERVISOR"
-            ) {
-              navigation.navigate("ProductsListScreen");
-            } else {
-              navigation.navigate(getProductsTabName());
-            }
-          }}
+          onPress={() => navigation.navigate("ProductsTab", { screen: "ProductsListScreen" })}
         >
           <Text style={[styles.browseButtonText, { color: colors.background }]}>
             تصفح المنتجات
