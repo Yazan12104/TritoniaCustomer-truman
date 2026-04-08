@@ -16,6 +16,11 @@ import { Input } from "../../../shared/components/Input";
 import { Button } from "../../../shared/components/Button";
 import { useAuthStore } from "../store/authStore";
 import { authApi } from "../api/authApi";
+import {
+  countPhoneDigits,
+  getSyrianPhoneNumberValidationError,
+  validateSyrianPhoneNumber,
+} from "../../../utils/phoneNumberValidator";
 
 interface RegisterScreenProps {
   onNavigateToLogin: () => void;
@@ -31,6 +36,34 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  const isFormReady =
+    !!firstName.trim() &&
+    !!lastName.trim() &&
+    !!phone.trim() &&
+    !!password &&
+    !!confirmPassword &&
+    password.length >= 6 &&
+    password === confirmPassword &&
+    validateSyrianPhoneNumber(phone.trim());
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    setValidationError(null);
+
+    if (!value.trim()) {
+      setPhoneError(null);
+      return;
+    }
+
+    if (countPhoneDigits(value) >= 6) {
+      setPhoneError(getSyrianPhoneNumberValidationError(value));
+      return;
+    }
+
+    setPhoneError(null);
+  };
 
   const validateForm = (): boolean => {
     if (!firstName.trim()) {
@@ -42,9 +75,17 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       return false;
     }
     if (!phone.trim()) {
+      setPhoneError("رقم الهاتف مطلوب");
       setValidationError("رقم الهاتف مطلوب");
       return false;
     }
+    const currentPhoneError = getSyrianPhoneNumberValidationError(phone);
+    if (currentPhoneError || !validateSyrianPhoneNumber(phone)) {
+      setPhoneError(currentPhoneError);
+      setValidationError(currentPhoneError);
+      return false;
+    }
+    setPhoneError(null);
     if (!password) {
       setValidationError("كلمة المرور مطلوبة");
       return false;
@@ -129,7 +170,10 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               label="الاسم الأول"
               placeholder="أدخل الاسم الأول"
               value={firstName}
-              onChangeText={setFirstName}
+              onChangeText={(value) => {
+                setFirstName(value);
+                setValidationError(null);
+              }}
               autoCapitalize="words"
               error={validationError && !firstName ? validationError : undefined}
             />
@@ -138,27 +182,33 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               label="اسم العائلة"
               placeholder="أدخل اسم العائلة"
               value={lastName}
-              onChangeText={setLastName}
+              onChangeText={(value) => {
+                setLastName(value);
+                setValidationError(null);
+              }}
               autoCapitalize="words"
               error={validationError && !lastName ? validationError : undefined}
             />
 
             <Input
               label="رقم الهاتف"
-              placeholder="أدخل رقم الهاتف"
+              placeholder="0933000234"
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={handlePhoneChange}
               keyboardType="phone-pad"
               autoCapitalize="none"
               autoCorrect={false}
-              error={validationError && !phone ? validationError : undefined}
+              error={phoneError || (validationError && !phone ? validationError : undefined)}
             />
 
             <Input
               label="كلمة المرور"
               placeholder="أدخل كلمة المرور"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(value) => {
+                setPassword(value);
+                setValidationError(null);
+              }}
               secureTextEntry
               autoCapitalize="none"
               error={validationError && !password ? validationError : undefined}
@@ -168,13 +218,16 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               label="تأكيد كلمة المرور"
               placeholder="أعد إدخال كلمة المرور"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(value) => {
+                setConfirmPassword(value);
+                setValidationError(null);
+              }}
               secureTextEntry
               autoCapitalize="none"
               error={validationError && password !== confirmPassword ? validationError : undefined}
             />
 
-            {(error || validationError) && (
+            {(error || (validationError && validationError !== phoneError)) && (
               <Typography variant="body" color={colors.error} style={styles.errorText}>
                 {error || validationError}
               </Typography>
@@ -184,6 +237,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               title="إنشاء الحساب"
               onPress={handleRegister}
               loading={isLoading}
+              disabled={!isFormReady}
               style={styles.submitButton}
             />
 
