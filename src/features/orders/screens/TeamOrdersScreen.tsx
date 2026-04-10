@@ -36,7 +36,7 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
     periodVal = period,
     start = customStart,
     end = customEnd,
-    isRefresh = false
+    isRefresh = false,
   ) => {
     if (pageNumber === 1 && !isRefresh) {
       setLoading(true);
@@ -89,7 +89,7 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
   const handlePeriodChange = (
     newPeriod: TimeFilter,
     start?: string,
-    end?: string
+    end?: string,
   ) => {
     setPeriod(newPeriod);
     if (newPeriod === "custom") {
@@ -107,8 +107,25 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
         return colors.error;
       case "PENDING":
         return colors.primary;
+      case "CANCELLED":
+        return colors.textLight;
       default:
         return colors.textLight;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "APPROVED":
+        return "تمت_الموافقة";
+      case "REJECTED":
+        return "مرفوض";
+      case "PENDING":
+        return "قيد_الانتظار";
+      case "CANCELLED":
+        return "ملغي";
+      default:
+        return status;
     }
   };
 
@@ -134,8 +151,10 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
             { backgroundColor: getStatusColor(item.status) + "20" },
           ]}
         >
-          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-            {item.status}
+          <Text
+            style={[styles.statusText, { color: getStatusColor(item.status) }]}
+          >
+            {getStatusLabel(item.status)}
           </Text>
         </View>
       </View>
@@ -219,7 +238,9 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
             style={[styles.retryButton, { backgroundColor: colors.primary }]}
             onPress={onRefresh}
           >
-            <Text style={[styles.retryButtonText, { color: colors.background }]}>
+            <Text
+              style={[styles.retryButtonText, { color: colors.background }]}
+            >
               إعادة المحاولة
             </Text>
           </TouchableOpacity>
