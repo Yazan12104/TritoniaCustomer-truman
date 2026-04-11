@@ -390,6 +390,16 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             {order.total_price.toLocaleString()} ل.س
           </Text>
         </View>
+        {order.delivery_fee ? (
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
+              رسوم التوصيل:
+            </Text>
+            <Text style={[styles.summaryValue, { color: colors.text }]}>
+              {order.delivery_fee.toLocaleString()} ل.س
+            </Text>
+          </View>
+        ) : null}
         <View
           style={[
             styles.summaryRow,
@@ -404,7 +414,7 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
               { color: colors.primary },
             ]}
           >
-            سعر البيع الإجمالي:
+            سعر البيع الإجمالي{order.delivery_fee ? " (مع التوصيل)" : ""}:
           </Text>
           <Text
             style={[
