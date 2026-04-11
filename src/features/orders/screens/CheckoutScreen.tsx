@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -18,6 +18,8 @@ import { OrderSummary } from "../components/OrderSummary";
 import { useOrderStore } from "../store/orderStore";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useBranchesStore, Branch } from "../../branches/store/branchesStore";
+import { useDeliveryPointsStore } from "../../branches/store/deliveryPointsStore";
+import { DeliveryPoint } from "../../branches/types";
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const { cartItems, total, clearCart } = useCartStore();
@@ -26,11 +28,14 @@ export const CheckoutScreen = ({ navigation }: any) => {
   const {
     selectedBranchId,
     setBranchId,
+    selectedDeliveryPoint,
+    setDeliveryPoint,
     createOrder,
     isLoading,
     error,
     resetError,
   } = useOrderStore();
+  const { deliveryPoints, fetchDeliveryPointsForBranch } = useDeliveryPointsStore();
   const colors = useThemeColors();
 
   const [notes, setNotes] = useState("");
@@ -38,6 +43,16 @@ export const CheckoutScreen = ({ navigation }: any) => {
   useEffect(() => {
     fetchBranches();
   }, []);
+
+  useEffect(() => {
+    if (selectedBranchId) {
+      fetchDeliveryPointsForBranch(selectedBranchId);
+      setDeliveryPoint(null);
+    }
+  }, [selectedBranchId]);
+
+  const deliveryFee = selectedDeliveryPoint ? parseFloat(selectedDeliveryPoint.fee) : 0;
+  const totalWithDeliveryFee = total + deliveryFee;
 
   const handlePlaceOrder = async () => {
     if (!user?.id) {
@@ -48,12 +63,15 @@ export const CheckoutScreen = ({ navigation }: any) => {
       Alert.alert("تنبيه", "يرجى اختيار الفرع أولاً.");
       return;
     }
+    if (!selectedDeliveryPoint) {
+      Alert.alert("تنبيه", "يرجى اختيار نقطة التسليم.");
+      return;
+    }
 
-    // For customers, use their own ID as customer_id
     const orderId = await createOrder({
       customer_id: user.id,
       branch_id: selectedBranchId,
-      sold_price: total,
+      sold_price: totalWithDeliveryFee,
       notes: notes,
       items: cartItems.map((item) => ({
         product_id: item.productId,
@@ -91,6 +109,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
         إتمام الطلب
       </Typography>
 
+      {/* 1. Branch Selection */}
       <View
         style={[
           styles.section,
@@ -138,6 +157,60 @@ export const CheckoutScreen = ({ navigation }: any) => {
         </ScrollView>
       </View>
 
+      {/* 2. Delivery Point Selection */}
+      {selectedBranchId && (
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
+            2. اختيار نقطة التسليم
+          </Typography>
+          <ScrollView style={styles.listContainer} nestedScrollEnabled={true}>
+            {deliveryPoints.map((point: DeliveryPoint) => (
+              <TouchableOpacity
+                key={point.id}
+                style={[
+                  styles.listItem,
+                  { borderBottomColor: colors.border },
+                  selectedDeliveryPoint?.id === point.id && [
+                    styles.listItemSelected,
+                    { backgroundColor: colors.primary + "15" },
+                  ],
+                ]}
+                onPress={() => setDeliveryPoint(point)}
+              >
+                <Text
+                  style={[
+                    styles.itemName,
+                    { color: colors.text },
+                    selectedDeliveryPoint?.id === point.id && [
+                      styles.itemNameSelected,
+                      { color: colors.primary },
+                    ],
+                  ]}
+                >
+                  {point.name}
+                </Text>
+                <Text
+                  style={[styles.itemSubtitle, { color: colors.textLight }]}
+                >
+                  رسوم التوصيل: {parseFloat(point.fee).toLocaleString('ar-EG')} ل.س
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {deliveryPoints.length === 0 && (
+              <Text style={[styles.emptyMessage, { color: colors.textLight }]}>
+                لا توجد نقاط تسليم متاحة لهذا الفرع
+              </Text>
+            )}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* 3. Notes */}
       <View
         style={[
           styles.section,
@@ -145,7 +218,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
         ]}
       >
         <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
-          2. ملاحظات على الطلب
+          3. ملاحظات على الطلب
         </Typography>
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: colors.text }]}>ملاحظات:</Text>
@@ -170,8 +243,13 @@ export const CheckoutScreen = ({ navigation }: any) => {
         </View>
       </View>
 
+      {/* Order Summary */}
       <View style={styles.summaryContainer}>
-        <OrderSummary subtotal={total} total={total} />
+        <OrderSummary
+          subtotal={total}
+          total={totalWithDeliveryFee}
+          deliveryFee={deliveryFee}
+        />
       </View>
 
       <TouchableOpacity
@@ -263,6 +341,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     textAlign: "right",
+  },
+  emptyMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    padding: spacing.m,
   },
   summaryContainer: {
     marginBottom: spacing.l,

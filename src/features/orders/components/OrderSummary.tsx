@@ -6,9 +6,10 @@ import { spacing } from "../../../shared/theme/spacing";
 interface OrderSummaryProps {
   subtotal: number;
   total: number;
+  deliveryFee?: number;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, total }) => {
+export const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, total, deliveryFee }) => {
   const colors = useThemeColors();
 
   return (
@@ -29,10 +30,21 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, total }) =
         </Text>
       </View>
 
+      {deliveryFee !== undefined && deliveryFee > 0 && (
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: colors.textLight }]}>
+            رسوم التوصيل
+          </Text>
+          <Text style={[styles.value, { color: colors.primary }]}>
+            {deliveryFee.toLocaleString()} ل.س
+          </Text>
+        </View>
+      )}
+
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <View style={styles.row}>
-        <Text style={[styles.totalLabel, { color: colors.text }]}>الإجمالي</Text>
+        <Text style={[styles.totalLabel, { color: colors.text }]}>الإجمالي{deliveryFee ? " (مع التوصيل)" : ""}</Text>
         <Text style={[styles.totalValue, { color: colors.primary }]}>
           {total.toLocaleString()} ل.س
         </Text>

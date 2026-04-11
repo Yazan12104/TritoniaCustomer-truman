@@ -231,6 +231,14 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             {order.branch_name}
           </Text>
         </Text>
+        {order.delivery_point_name && (
+          <Text style={[styles.infoRow, { color: colors.text }]}>
+            نقطة التسليم:{" "}
+            <Text style={[styles.infoValue, { color: colors.primary }]}>
+              {order.delivery_point_name}
+            </Text>
+          </Text>
+        )}
         <Text style={[styles.infoRow, { color: colors.text }]}>
           المسوق:{" "}
           <Text style={[styles.infoValue, { color: colors.primary }]}>

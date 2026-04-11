@@ -7,13 +7,16 @@ const mapOrder = (apiData: any): Order => ({
   customer_id: apiData.customer_id || '',
   marketer_id: apiData.marketer_id || '',
   branch_id: apiData.branch_id || '',
+  delivery_point_id: apiData.delivery_point_id,
   total_price: Number(apiData.total_price) || 0,
   sold_price: Number(apiData.sold_price) || 0,
+  delivery_fee: apiData.delivery_fee ? Number(apiData.delivery_fee) : undefined,
   status: apiData.status || 'PENDING',
   notes: apiData.notes || '',
   customer_name: apiData.customer_name || '',
   marketer_name: apiData.marketer_name || '',
   branch_name: apiData.branch_name || '',
+  delivery_point_name: apiData.delivery_point_name,
   created_at: apiData.created_at || '',
   items: Array.isArray(apiData.items) ? apiData.items.map((item: any) => ({
     id: item.id || '',
@@ -21,7 +24,7 @@ const mapOrder = (apiData: any): Order => ({
     product_id: item.product_id || '',
     quantity: Number(item.quantity) || 0,
     price: Number(item.price || item.main_price) || 0,
-    product_name: item.name || item.product_name || '', // Backend returns 'name' from products join
+    product_name: item.name || item.product_name || '',
   })) : [],
   transactions: Array.isArray(apiData.transactions) ? apiData.transactions.map((tx: any) => ({
     employee_name: tx.employee_name || '',

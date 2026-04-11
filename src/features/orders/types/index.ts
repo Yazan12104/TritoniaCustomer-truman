@@ -16,14 +16,17 @@ export interface Order {
   customer_id: string;
   marketer_id: string;
   branch_id: string;
+  delivery_point_id?: string;
   total_price: number;
   sold_price: number;
+  delivery_fee?: number;
   status: OrderStatus;
   notes?: string;
   items?: OrderItem[];
   customer_name?: string;
   marketer_name?: string;
   branch_name?: string;
+  delivery_point_name?: string;
   created_at: string;
   transactions?: {
     employee_name: string;
@@ -38,6 +41,7 @@ export interface Order {
 export interface CreateOrderInput {
   customer_id: string;
   branch_id: string;
+  delivery_point_id?: string;
   sold_price: number;
   notes?: string;
   items: {

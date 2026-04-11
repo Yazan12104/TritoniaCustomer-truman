@@ -2,11 +2,13 @@ import { create } from 'zustand';
 import { Order, CreateOrderInput } from '../types';
 import { ordersApi } from '../api/ordersApi';
 import { Customer } from '../../customers/types';
+import { DeliveryPoint } from '../../branches/types';
 
 interface OrderState {
   orders: Order[];
   selectedCustomer: Customer | null;
   selectedBranchId: string | null;
+  selectedDeliveryPoint: DeliveryPoint | null;
   isLoading: boolean;
   error: string | null;
   pagination: {
@@ -18,6 +20,7 @@ interface OrderState {
   // Actions
   setCustomer: (customer: Customer | null) => void;
   setBranchId: (branchId: string | null) => void;
+  setDeliveryPoint: (deliveryPoint: DeliveryPoint | null) => void;
   fetchOrders: (params?: any) => Promise<void>;
   createOrder: (input: Omit<CreateOrderInput, 'customer_id' | 'branch_id'> & { customer_id?: string; branch_id?: string }) => Promise<string | null>;
   resetError: () => void;
@@ -28,6 +31,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   orders: [],
   selectedCustomer: null,
   selectedBranchId: null,
+  selectedDeliveryPoint: null,
   isLoading: false,
   error: null,
   pagination: {
@@ -38,7 +42,9 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
   setCustomer: (customer) => set({ selectedCustomer: customer }),
 
-  setBranchId: (branchId) => set({ selectedBranchId: branchId }),
+  setBranchId: (branchId) => set({ selectedBranchId: branchId, selectedDeliveryPoint: null }),
+
+  setDeliveryPoint: (deliveryPoint) => set({ selectedDeliveryPoint: deliveryPoint }),
 
   fetchOrders: async (params) => {
     set({ isLoading: true, error: null });
@@ -63,10 +69,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   },
 
   createOrder: async (input) => {
-    const { selectedCustomer, selectedBranchId } = get();
+    const { selectedCustomer, selectedBranchId, selectedDeliveryPoint } = get();
 
-    // Allow explicit customer_id/branch_id from input (for customer app)
-    // or fall back to selectedCustomer/selectedBranchId (for marketer app)
     const customerId = input.customer_id || selectedCustomer?.id;
     const branchId = input.branch_id || selectedBranchId;
 
@@ -80,12 +84,18 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       return null;
     }
 
+    if (!selectedDeliveryPoint) {
+      set({ error: 'يرجى اختيار نقطة التسليم' });
+      return null;
+    }
+
     set({ isLoading: true, error: null });
     try {
       const result = await ordersApi.createOrder({
         ...input,
         customer_id: customerId,
         branch_id: branchId,
+        delivery_point_id: selectedDeliveryPoint.id,
       });
       set({ isLoading: false });
       return result.id;
@@ -97,5 +107,5 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
   resetError: () => set({ error: null }),
 
-  clearSelection: () => set({ selectedCustomer: null, selectedBranchId: null }),
+  clearSelection: () => set({ selectedCustomer: null, selectedBranchId: null, selectedDeliveryPoint: null }),
 }));
