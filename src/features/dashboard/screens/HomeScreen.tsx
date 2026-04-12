@@ -2,12 +2,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   RefreshControl,
   ActivityIndicator,
   Text,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Typography } from "../../../shared/components/Typography";
 import { Button } from "../../../shared/components/Button";
 import { useAuthStore } from "../../auth/store/authStore";

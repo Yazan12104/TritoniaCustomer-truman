@@ -2,12 +2,12 @@ import React from "react";
 import {
   View,
   StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Image,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Typography } from "../../../shared/components/Typography";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
@@ -17,9 +17,10 @@ import { authApi } from "../api/authApi";
 
 interface LoginScreenProps {
   onNavigateToRegister?: () => void;
+  onNavigateToForgotPassword?: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, onNavigateToForgotPassword }) => {
   const { setAuth, setLoading, setError, isLoading, error } = useAuthStore();
   const colors = useThemeColors();
 
@@ -82,6 +83,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister }
               error={error}
             />
 
+            {onNavigateToForgotPassword && (
+              <TouchableOpacity 
+                style={styles.forgotPasswordContainer} 
+                onPress={onNavigateToForgotPassword}
+              >
+                <Typography variant="body" color={colors.primary} style={styles.forgotPasswordText}>
+                  نسيت كلمة المرور؟
+                </Typography>
+              </TouchableOpacity>
+            )}
+
             {onNavigateToRegister && (
               <View style={styles.registerLinkContainer}>
                 <Typography variant="body" color={colors.textLight}>
@@ -135,6 +147,14 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 8,
     borderWidth: 1,
+  },
+  forgotPasswordContainer: {
+    alignItems: "center",
+    marginTop: spacing.l,
+  },
+  forgotPasswordText: {
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
   registerLinkContainer: {
     flexDirection: "row",
