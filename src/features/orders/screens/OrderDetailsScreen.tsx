@@ -623,10 +623,14 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 16,
+    flex: 1,
+    textAlign: "right",
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: "bold",
+    flexShrink: 0,
+    marginLeft: spacing.s,
   },
   soldRow: {
     marginTop: spacing.s,
@@ -634,7 +638,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   soldLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   soldValue: {

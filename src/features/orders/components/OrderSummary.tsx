@@ -7,10 +7,19 @@ interface OrderSummaryProps {
   subtotal: number;
   total: number;
   deliveryFee?: number;
+  discountPercentage?: number;
+  discountAmount?: number;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, total, deliveryFee }) => {
+export const OrderSummary: React.FC<OrderSummaryProps> = ({
+  subtotal,
+  total,
+  deliveryFee,
+  discountPercentage,
+  discountAmount,
+}) => {
   const colors = useThemeColors();
+  const hasDiscount = discountPercentage && discountPercentage > 0 && discountAmount && discountAmount > 0;
 
   return (
     <View
@@ -25,10 +34,36 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, total, del
         <Text style={[styles.label, { color: colors.textLight }]}>
           المجموع الفرعي
         </Text>
-        <Text style={[styles.value, { color: colors.text }]}>
+        <Text style={[
+          styles.value,
+          { color: colors.text },
+          hasDiscount && styles.strikethrough,
+        ]}>
           {subtotal.toLocaleString()} ل.س
         </Text>
       </View>
+
+      {hasDiscount ? (
+        <>
+          <View style={[styles.discountRow, { backgroundColor: colors.primary + "08" }]}>
+            <Text style={[styles.label, { color: colors.primary }]}>
+              خصم {discountPercentage}%
+            </Text>
+            <Text style={[styles.value, { color: colors.primary, fontWeight: "bold" }]}>
+              - {discountAmount.toLocaleString()} ل.س
+            </Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              المجموع بعد الخصم
+            </Text>
+            <Text style={[styles.value, { color: colors.primary, fontWeight: "bold" }]}>
+              {(subtotal - discountAmount).toLocaleString()} ل.س
+            </Text>
+          </View>
+        </>
+      ) : null}
 
       {deliveryFee !== undefined && deliveryFee > 0 && (
         <View style={styles.row}>
@@ -71,12 +106,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: spacing.s,
   },
+  discountRow: {
+    flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    marginBottom: spacing.s,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.s,
+    borderRadius: spacing.xs,
+  },
   label: {
     fontSize: 16,
   },
   value: {
     fontSize: 16,
     fontWeight: "500",
+  },
+  strikethrough: {
+    textDecorationLine: "line-through",
+    opacity: 0.6,
   },
   divider: {
     height: 1,

@@ -20,6 +20,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 import { useBranchesStore, Branch } from "../../branches/store/branchesStore";
 import { useDeliveryPointsStore } from "../../branches/store/deliveryPointsStore";
 import { DeliveryPoint } from "../../branches/types";
+import { apiClient } from "../../../core/api/apiClient";
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const { cartItems, total, clearCart } = useCartStore();
@@ -40,6 +41,17 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
   const [notes, setNotes] = useState("");
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponResult, setCouponResult] = useState<{
+    available: boolean;
+    discount_percentage?: number;
+    code?: string;
+    reason?: string;
+  } | null>(null);
+  const [couponError, setCouponError] = useState("");
+
   useEffect(() => {
     fetchBranches();
   }, []);
@@ -51,8 +63,57 @@ export const CheckoutScreen = ({ navigation }: any) => {
     }
   }, [selectedBranchId]);
 
+  // Reset coupon when code changes
+  useEffect(() => {
+    if (couponResult) {
+      setCouponResult(null);
+      setCouponError("");
+    }
+  }, [couponCode]);
+
   const deliveryFee = selectedDeliveryPoint ? parseFloat(selectedDeliveryPoint.fee) : 0;
-  const totalWithDeliveryFee = total + deliveryFee;
+
+  // Calculate discount
+  const discountPercentage = couponResult?.available ? (couponResult.discount_percentage || 0) : 0;
+  const discountAmount = discountPercentage > 0 ? Number((total * (discountPercentage / 100)).toFixed(2)) : 0;
+  const subtotalAfterDiscount = Number(Math.max(0, total - discountAmount).toFixed(2));
+  const totalWithDeliveryFee = subtotalAfterDiscount + deliveryFee;
+
+  const handleCheckCoupon = async () => {
+    const trimmed = couponCode.trim();
+    if (!trimmed) {
+      setCouponError("يرجى إدخال كود الخصم");
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError("");
+    setCouponResult(null);
+
+    try {
+      const response = await apiClient.get(`/coupons/check?code=${encodeURIComponent(trimmed)}`);
+      const data = response.data.data;
+      setCouponResult(data);
+
+      if (!data.available) {
+        if (data.reason === "already_used") {
+          setCouponError("لقد استخدمت هذا الكوبون مسبقاً.");
+        } else {
+          setCouponError("كود الخصم غير صالح أو منتهي الصلاحية.");
+        }
+      }
+    } catch (err: any) {
+      setCouponError(err.response?.data?.error || err.message || "فشل التحقق من كود الخصم");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
+    setCouponResult(null);
+    setCouponError("");
+  };
 
   const handlePlaceOrder = async () => {
     if (!user?.id) {
@@ -68,16 +129,23 @@ export const CheckoutScreen = ({ navigation }: any) => {
       return;
     }
 
-    const orderId = await createOrder({
+    const orderPayload: any = {
       customer_id: user.id,
       branch_id: selectedBranchId,
-      sold_price: totalWithDeliveryFee,
+      sold_price: total + deliveryFee, // Send original total + delivery (backend applies discount)
       notes: notes,
       items: cartItems.map((item) => ({
         product_id: item.productId,
         quantity: item.quantity,
       })),
-    });
+    };
+
+    // Add coupon code if valid
+    if (couponResult?.available && couponCode.trim()) {
+      orderPayload.coupon_code = couponCode.trim();
+    }
+
+    const orderId = await createOrder(orderPayload);
 
     if (orderId) {
       clearCart();
@@ -210,7 +278,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
         </View>
       )}
 
-      {/* 3. Notes */}
+      {/* 3. Coupon Code */}
       <View
         style={[
           styles.section,
@@ -218,7 +286,87 @@ export const CheckoutScreen = ({ navigation }: any) => {
         ]}
       >
         <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
-          3. ملاحظات على الطلب
+          3. كود الخصم (اختياري)
+        </Typography>
+
+        {couponResult?.available ? (
+          // Coupon applied successfully
+          <View style={[styles.couponApplied, { backgroundColor: colors.primary + "10", borderColor: colors.primary + "30" }]}>
+            <View style={styles.couponAppliedHeader}>
+              <View style={styles.couponAppliedInfo}>
+                <Text style={[styles.couponAppliedCode, { color: colors.primary }]}>
+                  ✓ {couponResult.code}
+                </Text>
+                <Text style={[styles.couponAppliedDiscount, { color: colors.text }]}>
+                  خصم {couponResult.discount_percentage}% على المبلغ الإجمالي
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.removeCouponBtn, { borderColor: colors.error + "40" }]}
+                onPress={handleRemoveCoupon}
+              >
+                <Text style={{ color: colors.error, fontSize: 13, fontWeight: "600" }}>إزالة</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          // Coupon input
+          <View style={styles.couponInputRow}>
+            <TextInput
+              style={[
+                styles.couponInput,
+                {
+                  backgroundColor: colors.background,
+                  borderColor: couponError ? colors.error : colors.border,
+                  color: colors.text,
+                },
+              ]}
+              value={couponCode}
+              onChangeText={(text) => setCouponCode(text.toUpperCase())}
+              placeholder="أدخل كود الخصم..."
+              placeholderTextColor={colors.textLight}
+              textAlign="right"
+              autoCapitalize="characters"
+              editable={!couponLoading}
+            />
+            <TouchableOpacity
+              style={[
+                styles.couponCheckBtn,
+                { backgroundColor: colors.primary },
+                couponLoading && { opacity: 0.6 },
+              ]}
+              onPress={handleCheckCoupon}
+              disabled={couponLoading}
+            >
+              {couponLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.couponCheckBtnText}>تحقق</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {couponError ? (
+          <Text style={[styles.couponErrorText, { color: colors.error }]}>
+            {couponError}
+          </Text>
+        ) : null}
+
+        <Text style={[styles.couponHint, { color: colors.textLight }]}>
+          الخصم يُطبّق على المبلغ الإجمالي قبل إضافة أجور التوصيل.
+        </Text>
+      </View>
+
+      {/* 4. Notes */}
+      <View
+        style={[
+          styles.section,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
+        <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
+          4. ملاحظات على الطلب
         </Typography>
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: colors.text }]}>ملاحظات:</Text>
@@ -249,6 +397,8 @@ export const CheckoutScreen = ({ navigation }: any) => {
           subtotal={total}
           total={totalWithDeliveryFee}
           deliveryFee={deliveryFee}
+          discountPercentage={discountPercentage}
+          discountAmount={discountAmount}
         />
       </View>
 
@@ -362,5 +512,73 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  // Coupon styles
+  couponInputRow: {
+    flexDirection: "row-reverse",
+    gap: spacing.s,
+    alignItems: "center",
+  },
+  couponInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: spacing.s,
+    padding: spacing.s,
+    fontSize: 15,
+    fontWeight: "600",
+    letterSpacing: 1,
+  },
+  couponCheckBtn: {
+    paddingHorizontal: spacing.m,
+    paddingVertical: spacing.s + 2,
+    borderRadius: spacing.s,
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 70,
+  },
+  couponCheckBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  couponErrorText: {
+    fontSize: 13,
+    textAlign: "right",
+    marginTop: spacing.s,
+  },
+  couponHint: {
+    fontSize: 11,
+    textAlign: "right",
+    marginTop: spacing.s,
+  },
+  couponApplied: {
+    borderRadius: spacing.s,
+    borderWidth: 1,
+    padding: spacing.m,
+  },
+  couponAppliedHeader: {
+    flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  couponAppliedInfo: {
+    flex: 1,
+  },
+  couponAppliedCode: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "right",
+    marginBottom: 2,
+  },
+  couponAppliedDiscount: {
+    fontSize: 13,
+    textAlign: "right",
+  },
+  removeCouponBtn: {
+    paddingHorizontal: spacing.m,
+    paddingVertical: spacing.xs,
+    borderRadius: spacing.s,
+    borderWidth: 1,
+    marginLeft: spacing.s,
   },
 });

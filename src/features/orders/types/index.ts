@@ -44,6 +44,7 @@ export interface CreateOrderInput {
   delivery_point_id?: string;
   sold_price: number;
   notes?: string;
+  coupon_code?: string;
   items: {
     product_id: string;
     quantity: number;
