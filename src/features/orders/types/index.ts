@@ -22,6 +22,9 @@ export interface Order {
   delivery_fee?: number;
   status: OrderStatus;
   notes?: string;
+  coupon_code?: string;
+  discount_percentage?: number;
+  discount_amount?: number;
   items?: OrderItem[];
   customer_name?: string;
   marketer_name?: string;

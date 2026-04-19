@@ -285,6 +285,45 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
         ))}
       </View>
 
+      {order.coupon_code && (
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Typography
+            variant="h3"
+            color={colors.primary}
+            style={styles.sectionTitle}
+          >
+            الكوبون المستخدم
+          </Typography>
+          <Text style={[styles.infoRow, { color: colors.text }]}>
+            كود الكوبون:{" "}
+            <Text style={[styles.infoValue, { color: colors.primary }]}>
+              {order.coupon_code}
+            </Text>
+          </Text>
+          {order.discount_percentage && (
+            <Text style={[styles.infoRow, { color: colors.text }]}>
+              نسبة الخصم:{" "}
+              <Text style={[styles.infoValue, { color: colors.primary }]}>
+                {order.discount_percentage}%
+              </Text>
+            </Text>
+          )}
+          {order.discount_amount && (
+            <Text style={[styles.infoRow, { color: colors.text }]}>
+              مبلغ الخصم:{" "}
+              <Text style={[styles.infoValue, { color: colors.primary }]}>
+                {order.discount_amount.toLocaleString()} ل.س
+              </Text>
+            </Text>
+          )}
+        </View>
+      )}
+
       {order.notes && (
         <View
           style={[
@@ -397,6 +436,16 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
             </Text>
             <Text style={[styles.summaryValue, { color: colors.text }]}>
               {order.delivery_fee.toLocaleString()} ل.س
+            </Text>
+          </View>
+        ) : null}
+        {order.discount_amount ? (
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>
+              الخصم:
+            </Text>
+            <Text style={[styles.summaryValue, { color: colors.error }]}>
+              -{order.discount_amount.toLocaleString()} ل.س
             </Text>
           </View>
         ) : null}
