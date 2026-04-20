@@ -285,44 +285,6 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
         ))}
       </View>
 
-      {order.coupon_code && (
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
-          <Typography
-            variant="h3"
-            color={colors.primary}
-            style={styles.sectionTitle}
-          >
-            الكوبون المستخدم
-          </Typography>
-          <Text style={[styles.infoRow, { color: colors.text }]}>
-            كود الكوبون:{" "}
-            <Text style={[styles.infoValue, { color: colors.primary }]}>
-              {order.coupon_code}
-            </Text>
-          </Text>
-          {order.discount_percentage && (
-            <Text style={[styles.infoRow, { color: colors.text }]}>
-              نسبة الخصم:{" "}
-              <Text style={[styles.infoValue, { color: colors.primary }]}>
-                {order.discount_percentage}%
-              </Text>
-            </Text>
-          )}
-          {order.discount_amount && (
-            <Text style={[styles.infoRow, { color: colors.text }]}>
-              مبلغ الخصم:{" "}
-              <Text style={[styles.infoValue, { color: colors.primary }]}>
-                {order.discount_amount.toLocaleString()} ل.س
-              </Text>
-            </Text>
-          )}
-        </View>
-      )}
 
       {order.notes && (
         <View
@@ -441,9 +403,18 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
         ) : null}
         {order.discount_amount ? (
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>
-              الخصم:
-            </Text>
+             <View style={styles.discountLabelContainer}>
+              <Text style={[styles.summaryLabel, { color: colors.text }]}>
+                الخصم {order.discount_percentage ? `(${order.discount_percentage}%)` : ""}:
+              </Text>
+              {order.coupon_code && (
+                <View style={[styles.couponBadge, { backgroundColor: colors.primary + "15" }]}>
+                  <Text style={[styles.couponBadgeText, { color: colors.primary }]}>
+                    {order.coupon_code}
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text style={[styles.summaryValue, { color: colors.error }]}>
               -{order.discount_amount.toLocaleString()} ل.س
             </Text>
@@ -720,5 +691,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     textAlign: "center",
+  },
+  discountLabelContainer: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    flex: 1,
+  },
+  couponBadge: {
+    marginRight: spacing.s,
+    paddingHorizontal: spacing.s,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "rgba(0,0,0,0.1)",
+  },
+  couponBadgeText: {
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

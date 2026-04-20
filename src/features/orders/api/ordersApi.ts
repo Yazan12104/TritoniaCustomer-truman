@@ -85,4 +85,9 @@ export const ordersApi = {
   cancelOrder: async (orderId: string): Promise<void> => {
     await apiClient.put(`/orders/${orderId}/cancel`);
   },
+  checkCoupon: async (code: string): Promise<{ available: boolean; discount_percentage?: number; reason?: string; code?: string }> => {
+    const response = await apiClient.get('/coupons/check', { params: { code } });
+    // Backend returns { success: true, body: { available, discount_percentage, reason, code } }
+    return response.data.body;
+  },
 };

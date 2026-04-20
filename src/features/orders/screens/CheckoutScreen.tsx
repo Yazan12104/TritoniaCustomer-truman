@@ -14,9 +14,9 @@ import { Typography } from "../../../shared/components/Typography";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
 import { useCartStore } from "../store/cartStore";
-import { OrderSummary } from "../components/OrderSummary";
 import { useOrderStore } from "../store/orderStore";
 import { useAuthStore } from "../../auth/store/authStore";
+import { ordersApi } from "../api/ordersApi";
 import { useBranchesStore, Branch } from "../../branches/store/branchesStore";
 import { useDeliveryPointsStore } from "../../branches/store/deliveryPointsStore";
 import { DeliveryPoint } from "../../branches/types";
@@ -91,8 +91,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
     setCouponResult(null);
 
     try {
-      const response = await apiClient.get(`/coupons/check?code=${encodeURIComponent(trimmed)}`);
-      const data = response.data.data;
+      const data = await ordersApi.checkCoupon(trimmed);
       setCouponResult(data);
 
       if (!data.available) {
@@ -103,7 +102,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
         }
       }
     } catch (err: any) {
-      setCouponError(err.response?.data?.error || err.message || "فشل التحقق من كود الخصم");
+      setCouponError(err.message || "فشل التحقق من كود الخصم");
     } finally {
       setCouponLoading(false);
     }
