@@ -45,7 +45,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
             onDecrease={() => updateQuantity(item.productId, item.quantity - 1)}
           />
           <Text style={[styles.itemTotal, { color: colors.text }]}>
-            {item.price * item.quantity} ل.س
+            {Math.round(item.price * item.quantity * 100) / 100} ل.س
           </Text>
         </View>
       </View>

@@ -219,32 +219,29 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
         >
           بيانات العميل والفرع
         </Typography>
-        <Text style={[styles.infoRow, { color: colors.text }]}>
-          العميل:{" "}
-          <Text style={[styles.infoValue, { color: colors.primary }]}>
-            {order.customer_name}
-          </Text>
-        </Text>
-        <Text style={[styles.infoRow, { color: colors.text }]}>
-          الفرع:{" "}
-          <Text style={[styles.infoValue, { color: colors.primary }]}>
-            {order.branch_name}
-          </Text>
-        </Text>
+        <View style={styles.infoRowContainer}>
+          <Text style={[styles.infoValue, { color: colors.primary }]}>{order.customer_name}</Text>
+                 <Text style={[styles.infoLabel, { color: colors.text }]}>العميل:</Text>
+
+        </View>
+        <View style={styles.infoRowContainer}>
+          <Text style={[styles.infoValue, { color: colors.primary }]}>{order.branch_name}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.text }]}>الفرع:</Text>
+
+        </View>
         {order.delivery_point_name && (
-          <Text style={[styles.infoRow, { color: colors.text }]}>
-            نقطة التسليم:{" "}
-            <Text style={[styles.infoValue, { color: colors.primary }]}>
-              {order.delivery_point_name}
-            </Text>
-          </Text>
+          <View style={styles.infoRowContainer}>
+            <Text style={[styles.infoValue, { color: colors.primary }]}>{order.delivery_point_name}</Text>
+                     <Text style={[styles.infoLabel, { color: colors.text }]}>نقطة التسليم:</Text>
+
+          </View>
         )}
-        <Text style={[styles.infoRow, { color: colors.text }]}>
-          المسوق:{" "}
-          <Text style={[styles.infoValue, { color: colors.primary }]}>
-            {order.marketer_name}
-          </Text>
-        </Text>
+        <View style={styles.infoRowContainer}>
+         
+          <Text style={[styles.infoValue, { color: colors.primary }]}>{order.marketer_name}</Text>
+                  <Text style={[styles.infoLabel, { color: colors.text }]}>المسوق:</Text>
+
+        </View>
       </View>
 
       <View
@@ -567,7 +564,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: spacing.s,
-    textAlign: "right",
+    textAlign: "left",
+  },
+  infoRowContainer: {
+        justifyContent: "space-between",
+
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  infoLabel: {
+    fontSize: 16,
+    marginLeft: spacing.xs,
   },
   infoRow: {
     fontSize: 16,
@@ -575,7 +583,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoValue: {
+    fontSize: 16,
     fontWeight: "bold",
+    textAlign: "left",
   },
   itemRow: {
     flexDirection: "row-reverse",
@@ -636,7 +646,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   summaryRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: spacing.s,
@@ -644,7 +654,7 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 16,
     flex: 1,
-    textAlign: "right",
+    textAlign: "left",
   },
   summaryValue: {
     fontSize: 16,

@@ -87,7 +87,7 @@ export const ordersApi = {
   },
   checkCoupon: async (code: string): Promise<{ available: boolean; discount_percentage?: number; reason?: string; code?: string }> => {
     const response = await apiClient.get('/coupons/check', { params: { code } });
-    // Backend returns { success: true, body: { available, discount_percentage, reason, code } }
-    return response.data.body;
+    // Backend returns { success: true, data: { available, discount_percentage, reason, code } }
+    return response.data.data || response.data.body;
   },
 };

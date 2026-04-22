@@ -5,6 +5,7 @@ import {
   FlatList,
   Text,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { ScreenContainer } from "../../../shared/components/ScreenContainer";
 import { Typography } from "../../../shared/components/Typography";
@@ -15,8 +16,26 @@ import { CartItemCard } from "../components/CartItemCard";
 import { OrderSummary } from "../components/OrderSummary";
 
 export const CartScreen = ({ navigation }: any) => {
-  const { cartItems, subtotal, total } = useCartStore();
+  const { cartItems, subtotal, total, clearCart } = useCartStore();
   const colors = useThemeColors();
+
+  const handleEmptyCart = () => {
+    Alert.alert(
+      "تفريغ السلة",
+      "هل أنت متأكد من أنك تريد إزالة جميع المنتجات من السلة؟",
+      [
+        {
+          text: "إلغاء",
+          style: "cancel",
+        },
+        {
+          text: "تفريغ",
+          style: "destructive",
+          onPress: () => clearCart(),
+        },
+      ]
+    );
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -46,6 +65,16 @@ export const CartScreen = ({ navigation }: any) => {
       contentContainerStyle={styles.container}
     >
       <View style={styles.header}>
+        <TouchableOpacity
+          onPress={handleEmptyCart}
+          style={styles.emptyCartButton}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.emptyCartText, { color: colors.error }]}>
+            تفريغ السلة
+          </Text>
+        </TouchableOpacity>
+
         <Typography variant="h2" color={colors.primary}>
           سلة المشتريات
         </Typography>
@@ -98,9 +127,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: spacing.l,
     marginBottom: spacing.m,
-    textAlign: "right",
+  },
+  emptyCartButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.s,
+  },
+  emptyCartText: {
+    fontWeight: "bold",
+    fontSize: 14,
   },
   list: {
     paddingHorizontal: spacing.l,

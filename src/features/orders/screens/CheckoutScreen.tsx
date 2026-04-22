@@ -20,7 +20,7 @@ import { ordersApi } from "../api/ordersApi";
 import { useBranchesStore, Branch } from "../../branches/store/branchesStore";
 import { useDeliveryPointsStore } from "../../branches/store/deliveryPointsStore";
 import { DeliveryPoint } from "../../branches/types";
-import { apiClient } from "../../../core/api/apiClient";
+import { OrderSummary } from "../components/OrderSummary";
 
 export const CheckoutScreen = ({ navigation }: any) => {
   const { cartItems, total, clearCart } = useCartStore();
@@ -79,7 +79,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
   const subtotalAfterDiscount = Number(Math.max(0, total - discountAmount).toFixed(2));
   const totalWithDeliveryFee = subtotalAfterDiscount + deliveryFee;
 
-  const handleCheckCoupon = async () => {
+  const handleCheckCoupon = async (couponCode: string) => {
     const trimmed = couponCode.trim();
     if (!trimmed) {
       setCouponError("يرجى إدخال كود الخصم");
@@ -92,6 +92,13 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
     try {
       const data = await ordersApi.checkCoupon(trimmed);
+      console.log("the data is ", data);
+
+      if (!data) {
+        setCouponError("لم يتم العثور على بيانات الكوبون.");
+        return;
+      }
+
       setCouponResult(data);
 
       if (!data.available) {
@@ -334,7 +341,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
                 { backgroundColor: colors.primary },
                 couponLoading && { opacity: 0.6 },
               ]}
-              onPress={handleCheckCoupon}
+              onPress={() => handleCheckCoupon(couponCode)}
               disabled={couponLoading}
             >
               {couponLoading ? (
@@ -433,7 +440,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: spacing.l,
-    textAlign: "right",
+    textAlign: "left",
   },
   section: {
     marginBottom: spacing.l,
@@ -443,7 +450,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: spacing.s,
-    textAlign: "right",
+    textAlign: "left",
   },
   searchInput: {
     borderWidth: 1,
@@ -462,12 +469,12 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: "bold",
-    textAlign: "right",
+    textAlign: "left",
   },
   itemNameSelected: {},
   itemSubtitle: {
     fontSize: 12,
-    textAlign: "right",
+    textAlign: "left",
   },
   inputGroup: {
     marginBottom: spacing.m,

@@ -31,15 +31,17 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
       <Text style={[styles.title, { color: colors.text }]}>ملخص الطلب</Text>
 
       <View style={styles.row}>
-        <Text style={[styles.label, { color: colors.textLight }]}>
-          المجموع الفرعي
-        </Text>
+
         <Text style={[
           styles.value,
           { color: colors.text },
           hasDiscount && styles.strikethrough,
         ]}>
           {subtotal.toLocaleString()} ل.س
+          
+        </Text>
+                <Text style={[styles.label, { color: colors.textLight }]}>
+          المجموع الفرعي
         </Text>
       </View>
 
@@ -79,10 +81,11 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <View style={styles.row}>
-        <Text style={[styles.totalLabel, { color: colors.text }]}>الإجمالي{deliveryFee ? " (مع التوصيل)" : ""}</Text>
         <Text style={[styles.totalValue, { color: colors.primary }]}>
           {total.toLocaleString()} ل.س
         </Text>
+                <Text style={[styles.totalLabel, { color: colors.text }]}>الإجمالي{deliveryFee ? " (مع التوصيل)" : ""}</Text>
+
       </View>
     </View>
   );
@@ -99,7 +102,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: spacing.m,
-    textAlign: "right",
+    textAlign: "left",
   },
   row: {
     flexDirection: "row-reverse",

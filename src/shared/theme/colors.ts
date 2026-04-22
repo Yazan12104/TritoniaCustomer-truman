@@ -21,6 +21,7 @@ export const darkColors = {
   surface: '#1e1e1e',    // Surface for cards
   text: '#ffffff',
   textLight: '#adb5bd',
+  textDimmer: '#020202',
   error: '#ff6b6b',
   success: '#51cf66',
   warning: '#fcc419',
