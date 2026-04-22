@@ -58,7 +58,7 @@ export const ProductsListScreen = ({ navigation }: any) => {
           <Skeleton
             width="40%"
             height={30}
-            style={{ marginBottom: spacing.m }}
+            style={{ marginBottom: spacing.l }}
           />
           <View style={{ flexDirection: "row", marginBottom: spacing.m }}>
             {[1, 2, 3, 4].map((i) => (
@@ -149,8 +149,7 @@ export const ProductsListScreen = ({ navigation }: any) => {
       <FlatList
         data={filteredProducts}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
+        numColumns={1}
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             <ProductCard
@@ -188,22 +187,14 @@ export const ProductsListScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { justifyContent: "center", alignItems: "center", flex: 1 },
-  header: { paddingHorizontal: spacing.l, marginBottom: spacing.m },
+  header: { paddingHorizontal: spacing.s, marginBottom: spacing.m },
   categoriesContainer: { marginBottom: spacing.m },
-  categoriesList: { paddingHorizontal: spacing.l },
-  productList: { paddingHorizontal: spacing.l, paddingBottom: spacing.xxl },
-  columnWrapper: {
-    justifyContent: "space-between",
-    gap: spacing.m,
+  categoriesList: { paddingHorizontal: spacing.s },
+  productList: { paddingHorizontal: spacing.s, paddingBottom: spacing.xxl },
+  cardWrapper: {
     marginBottom: spacing.m,
   },
-  cardWrapper: {
-    flex: 1, // استخدام flex: 1 بدلاً من العرض الثابت لضمان التناسق
-  },
   gridSkeletonContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
     gap: spacing.m,
   },
   emptyContainer: { padding: spacing.xl, alignItems: "center" },

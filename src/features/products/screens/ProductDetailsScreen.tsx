@@ -31,6 +31,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [sliderWidth, setSliderWidth] = useState(width);
 
   const flatListRef = useRef<FlatList>(null);
   const { addToCart } = useCartStore();
@@ -80,7 +81,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
   };
 
   const renderImageItem = ({ item }: { item: ProductImage }) => (
-    <View style={styles.imageSlide}>
+    <View style={[styles.imageSlide, { width: sliderWidth }]}>
       <Image
         source={{
           uri:
@@ -88,7 +89,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
             "https://via.placeholder.com/600x400?text=No+Image",
         }}
         style={styles.fullImage}
-        resizeMode="cover"
+        resizeMode="contain"
       />
     </View>
   );
@@ -116,7 +117,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
 
   const onScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / width);
+    const index = Math.round(offsetX / sliderWidth);
     const safeIndex = Math.max(0, Math.min(index, images.length - 1));
     if (safeIndex !== activeImageIndex) {
       setActiveImageIndex(safeIndex);
@@ -125,14 +126,14 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
 
   const onMomentumScrollEnd = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / width);
+    const index = Math.round(offsetX / sliderWidth);
     const safeIndex = Math.max(0, Math.min(index, images.length - 1));
 
     if (safeIndex !== activeImageIndex) {
       setActiveImageIndex(safeIndex);
     }
 
-    const expectedOffset = safeIndex * width;
+    const expectedOffset = safeIndex * sliderWidth;
     if (Math.abs(offsetX - expectedOffset) > 1) {
       flatListRef.current?.scrollToOffset({
         offset: expectedOffset,
@@ -144,7 +145,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
   const scrollToImage = (index: number) => {
     if (index >= 0 && index < images.length) {
       flatListRef.current?.scrollToOffset({
-        offset: index * width,
+        offset: index * sliderWidth,
         animated: true,
       });
       setActiveImageIndex(index);
@@ -180,7 +181,14 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.imageContainer}>
+      <View 
+        style={styles.imageContainer}
+        onLayout={(e) => {
+          if (e.nativeEvent.layout.width > 0) {
+            setSliderWidth(e.nativeEvent.layout.width);
+          }
+        }}
+      >
         {images.length > 0 ? (
           <>
             <FlatList
@@ -238,7 +246,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
                 uri: "https://via.placeholder.com/600x400?text=No+Image",
               }}
               style={styles.fullImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
             <Text style={[styles.noImageText, { color: colors.textLight }]}>
               لا توجد صور
@@ -248,18 +256,23 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
       </View>
 
       <View style={styles.detailsContainer}>
-        <Typography variant="h1" color={colors.text} style={{ textAlign: "right" }}>
+        <Typography variant="h1" color={colors.text} style={{ textAlign: "left" }}>
           {product.name}
         </Typography>
         <Typography
           variant="h2"
           color={colors.primary}
-          style={[styles.price, { textAlign: "right" }]}
+          style={[styles.price, { textAlign: "left" }]}
         >
           {product.price.toLocaleString()} ل.س
         </Typography>
 
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { justifyContent: "flex-start" }]}>
+          <Text style={[styles.infoLabel, { color: colors.textLight } , ]}>
+            الحالة:
+          </Text>
+          
+          
           <Text
             style={[
               styles.infoValue,
@@ -270,18 +283,18 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
           >
             {product.in_stock ? "متوفر" : "غير متوفر"}
           </Text>
-          <Text style={[styles.infoLabel, { color: colors.textLight }]}>
-            الحالة:
-          </Text>
+
         </View>
 
-        <View style={styles.infoRow}>
-          <Text style={[styles.infoValue, { color: colors.text }]}>
-            {product.quantity}
-          </Text>
+        <View style={[styles.infoRow, { justifyContent: "flex-start" }]}>
           <Text style={[styles.infoLabel, { color: colors.textLight }]}>
             الكمية المتوفرة:
           </Text>
+        
+         <Text style={[styles.infoValue, { color: colors.text }]}>
+            {product.quantity}
+          </Text>
+
         </View>
 
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -289,11 +302,11 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
         <Typography
           variant="h3"
           color={colors.text}
-          style={[styles.sectionTitle, { textAlign: "right" }]}
+          style={[styles.sectionTitle, { textAlign: "left" }]}
         >
           الوصف
         </Typography>
-        <Text style={[styles.description, { color: colors.textLight }]}>
+        <Text style={[styles.description, { color: colors.textLight } , {textAlign: "left"}]}>
           {product.description || "لا يوجد وصف لهذا المنتج"}
         </Text>
       </View>
@@ -338,7 +351,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 20,
   },
   imageContainer: {
     position: "relative",
@@ -351,6 +364,8 @@ const styles = StyleSheet.create({
   imageSlide: {
     width: width,
     height: 300,
+    justifyContent:"center",
+    alignItems:"center"
   },
   fullImage: {
     width: "100%",
@@ -430,12 +445,14 @@ const styles = StyleSheet.create({
   },
   price: {
     marginVertical: spacing.s,
+    fontWeight: "700",
+    fontSize: 25,
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
     paddingVertical: spacing.xs,
-    alignItems: "center"
+    alignItems: "center",
   },
   infoLabel: {
     fontSize: 14,
@@ -444,6 +461,7 @@ const styles = StyleSheet.create({
   infoValue: {
     fontWeight: "600",
     fontSize: 14,
+    marginLeft: spacing.s
   },
   divider: {
     height: 1,

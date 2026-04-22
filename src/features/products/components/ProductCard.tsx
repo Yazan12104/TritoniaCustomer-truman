@@ -8,7 +8,8 @@ import {
 } from "react-native";
 import { Product } from "../types";
 import { useThemeColors } from "../../../shared/theme/colors";
-import { spacing, radii } from "../../../shared/theme/spacing";
+import { spacing } from "../../../shared/theme/spacing";
+import { Typography } from "../../../shared/components/Typography";
 
 interface ProductCardProps {
   product: Product;
@@ -30,32 +31,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onPress={onPress} 
       activeOpacity={0.9}
     >
-      <Image
-        source={{
-          uri:
-            primaryImage || "https://via.placeholder.com/300x300?text=No+Image",
-        }}
-        style={[styles.image, { backgroundColor: colors.border }]}
-        resizeMode="cover"
-      />
+      <View style={styles.imageContainer}>
+        <Image
+          source={{
+            uri:
+              primaryImage || "https://via.placeholder.com/300x300?text=No+Image",
+          }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
 
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
-          {product.name}
-        </Text>
-
-        <Text style={[styles.price, { color: colors.primary }]}>${product.price.toFixed(2)}</Text>
-
-        <View style={styles.availability}>
-          <Text
-            style={[
-              styles.availabilityText,
-              product.in_stock ? { color: colors.success } : { color: colors.error },
-            ]}
-          >
-            {product.in_stock ? "متوفر" : "غير متوفر"}
-          </Text>
+        <View style={styles.headerRow}>
+          <Typography variant="h3" color={colors.text} style={styles.title} numberOfLines={2}>
+            {product.name}
+          </Typography>
+          <View style={styles.availability}>
+            <Text
+              style={[
+                styles.availabilityText,
+                product.in_stock ? { color: colors.success } : { color: colors.error },
+              ]}
+            >
+              {product.in_stock ? "متوفر" : "غير متوفر"}
+            </Text>
+          </View>
         </View>
+
+        <Text style={[styles.price, { color: colors.primary }]}>S.P {product.price.toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -63,38 +67,64 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: spacing.m,
+    flexDirection: "row",
+    borderRadius: spacing.xs, // sharper corners
     overflow: "hidden",
     width: "100%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
     borderWidth: 1,
+    height: 175, // Scaled up ~50% from 117
+    direction: "rtl",
+  },
+  imageContainer: {
+    width: "43.33%",
+    padding: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#bbb", // Often white background helps product images pop
+    overflow: "hidden", // Ensure zoomed image doesn't bleed
   },
   image: {
-    width: "100%",
-    aspectRatio: 1, // نسبة عرض لارتفاع ثابتة لضمان التناسق
+    width: "117%", // Zoom in a bit to fill the extra height
+    height: "190%", // Keep ratio, zoom in
   },
   content: {
-    padding: spacing.s,
+    flex: 1,
+    padding: spacing.m,
+    justifyContent: "space-between",
+    direction: "rtl",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: spacing.xs,
   },
   title: {
-    fontSize: 14,
+    flex: 1,
     fontWeight: "bold",
-    marginBottom: spacing.xs,
+    marginRight: spacing.s,
+    textAlign: "left",
   },
   price: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: spacing.xs,
+    marginTop: spacing.s,
+    textAlign: "left",
   },
   availability: {
-    marginTop: spacing.xs,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
   },
   availabilityText: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

@@ -13,17 +13,21 @@ export const ProductCardSkeleton = () => {
         <Skeleton height="100%" borderRadius={0} />
       </View>
       <View style={styles.content}>
-        <Skeleton
-          width="80%"
-          height={14}
-          style={{ marginBottom: spacing.xs }}
-        />
-        <Skeleton
-          width="50%"
-          height={18}
-          style={{ marginBottom: spacing.xs }}
-        />
-        <Skeleton width="40%" height={12} />
+        <View style={styles.headerRow}>
+          <View style={styles.titleContainer}>
+            <Skeleton
+              width="100%"
+              height={16}
+              style={{ marginBottom: spacing.xs }}
+            />
+            <Skeleton
+              width="60%"
+              height={16}
+            />
+          </View>
+          <Skeleton width={50} height={20} borderRadius={4} />
+        </View>
+        <Skeleton width="40%" height={20} style={{ marginTop: spacing.m }} />
       </View>
     </View>
   );
@@ -31,17 +35,29 @@ export const ProductCardSkeleton = () => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: spacing.m,
+    flexDirection: "row",
+    borderRadius: spacing.xs, // Match sharper corners
     overflow: "hidden",
-    flex: 1, // Use flex: 1 to match the cardWrapper in the list 
+    flex: 1, 
     borderWidth: 1,
-    minHeight: 180,
+    height: 175, // Scaled up to match ProductCard (~50% more than 117)
+    width: "100%",
   },
   imagePlaceholder: {
-    width: "100%",
-    aspectRatio: 1,
+    width: "33.33%",
   },
   content: {
-    padding: spacing.s,
+    flex: 1,
+    padding: spacing.m,
+    justifyContent: "space-between",
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  titleContainer: {
+    flex: 1,
+    marginRight: spacing.s,
+  }
 });
