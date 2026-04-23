@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -169,7 +169,14 @@ export const CheckoutScreen = ({ navigation }: any) => {
   }, [error]);
 
   return (
-    <ScreenContainer scrollable={true}>
+    <ScreenContainer
+      scrollable={true}
+      contentContainerStyle={styles.screenContent}
+      scrollViewProps={{
+        keyboardShouldPersistTaps: "handled",
+        keyboardDismissMode: "on-drag",
+      }}
+    >
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
@@ -430,6 +437,9 @@ export const CheckoutScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingBottom: spacing.xxxl + 70,
+  },
   backButton: {
     paddingVertical: spacing.s,
     marginBottom: spacing.m,

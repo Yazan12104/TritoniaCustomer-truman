@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useThemeColors } from "../../../shared/theme/colors";
@@ -114,87 +116,172 @@ export const ProfileScreen = ({ navigation }: any) => {
   );
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
     >
-      <TouchableOpacity
-        style={styles.backBtn}
-        onPress={() => navigation.goBack()}
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
-        <MaterialCommunityIcons
-          name="arrow-right"
-          size={24}
-          color={colors.primary}
-        />
-        <Text style={[styles.backText, { color: colors.primary }]}>
-          الإعدادات
-        </Text>
-      </TouchableOpacity>
-
-      <View style={styles.avatarSection}>
-        <View
-          style={[
-            styles.avatarCircle,
-            { backgroundColor: colors.primary, shadowColor: colors.primary },
-          ]}
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
         >
-          <Text style={[styles.avatarText, { color: colors.background }]}>
-            {initials}
+          <MaterialCommunityIcons
+            name="arrow-right"
+            size={24}
+            color={colors.primary}
+          />
+          <Text style={[styles.backText, { color: colors.primary }]}>
+            الإعدادات
           </Text>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          المعلومات الشخصية
-        </Text>
+        </TouchableOpacity>
 
         <View
-          style={[
-            styles.infoCard,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
+          style={styles.avatarSection}
         >
-          <View style={styles.infoHeader}>
-            <View
-              style={[
-                styles.infoIcon,
-                { backgroundColor: colors.primary + "12" },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="account"
-                size={18}
-                color={colors.primary}
-              />
-            </View>
-            <Text style={[styles.infoLabel, { color: colors.textLight }]}>
-              الاسم الكامل
+          <View
+            style={[
+              styles.avatarCircle,
+              { backgroundColor: colors.primary, shadowColor: colors.primary },
+            ]}
+          >
+            <Text style={[styles.avatarText, { color: colors.background }]}>
+              {initials}
             </Text>
-            {!isEditing && (
-              <TouchableOpacity
-                onPress={() => setIsEditing(true)}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            المعلومات الشخصية
+          </Text>
+
+          <View
+            style={[
+              styles.infoCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <View style={styles.infoHeader}>
+              <View
                 style={[
-                  styles.editBtn,
+                  styles.infoIcon,
                   { backgroundColor: colors.primary + "12" },
                 ]}
               >
                 <MaterialCommunityIcons
-                  name="pencil"
-                  size={16}
+                  name="account"
+                  size={18}
                   color={colors.primary}
                 />
-                <Text style={[styles.editBtnText, { color: colors.primary }]}>
-                  تعديل
-                </Text>
-              </TouchableOpacity>
+              </View>
+              <Text style={[styles.infoLabel, { color: colors.textLight }]}>
+                الاسم الكامل
+              </Text>
+              {!isEditing && (
+                <TouchableOpacity
+                  onPress={() => setIsEditing(true)}
+                  style={[
+                    styles.editBtn,
+                    { backgroundColor: colors.primary + "12" },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="pencil"
+                    size={16}
+                    color={colors.primary}
+                  />
+                  <Text style={[styles.editBtnText, { color: colors.primary }]}>
+                    تعديل
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {isEditing ? (
+              <View style={styles.editContainer}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      color: colors.text,
+                    },
+                  ]}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="الاسم الأول"
+                  placeholderTextColor={colors.textLight}
+                  textAlign="right"
+                />
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      color: colors.text,
+                      marginTop: spacing.s,
+                    },
+                  ]}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="الاسم الأخير"
+                  placeholderTextColor={colors.textLight}
+                  textAlign="right"
+                />
+                <View style={styles.editActions}>
+                  <TouchableOpacity
+                    style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+                    onPress={handleSave}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator size="small" color={colors.background} />
+                    ) : (
+                      <Text
+                        style={[styles.saveBtnText, { color: colors.background }]}
+                      >
+                        حفظ
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.cancelBtn, { backgroundColor: colors.border }]}
+                    onPress={handleCancel}
+                  >
+                    <Text style={[styles.cancelBtnText, { color: colors.text }]}>
+                      إلغاء
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                {user?.name || "—"}
+              </Text>
             )}
           </View>
 
-          {isEditing ? (
-            <View style={styles.editContainer}>
+          <InfoRow icon="phone" label="رقم الهاتف" value={user?.phone || "—"} />
+
+          <View style={[styles.section, { marginTop: spacing.l }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              تغيير كلمة المرور
+            </Text>
+            <View
+              style={[
+                styles.infoCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
               <TextInput
                 style={[
                   styles.input,
@@ -204,10 +291,11 @@ export const ProfileScreen = ({ navigation }: any) => {
                     color: colors.text,
                   },
                 ]}
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="الاسم الأول"
+                value={oldPassword}
+                onChangeText={setOldPassword}
+                placeholder="كلمة المرور الحالية"
                 placeholderTextColor={colors.textLight}
+                secureTextEntry
                 textAlign="right"
               />
               <TextInput
@@ -220,138 +308,66 @@ export const ProfileScreen = ({ navigation }: any) => {
                     marginTop: spacing.s,
                   },
                 ]}
-                value={lastName}
-                onChangeText={setLastName}
-                placeholder="الاسم الأخير"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="كلمة المرور الجديدة"
                 placeholderTextColor={colors.textLight}
+                secureTextEntry
                 textAlign="right"
               />
-              <View style={styles.editActions}>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                    color: colors.text,
+                    marginTop: spacing.s,
+                  },
+                ]}
+                value={confirmNewPassword}
+                onChangeText={setConfirmNewPassword}
+                placeholder="تأكيد كلمة المرور الجديدة"
+                placeholderTextColor={colors.textLight}
+                secureTextEntry
+                textAlign="right"
+              />
+              <View style={{ marginTop: spacing.m, alignItems: "flex-end" }}>
                 <TouchableOpacity
                   style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-                  onPress={handleSave}
-                  disabled={isLoading}
+                  onPress={handleChangePassword}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color={colors.background} />
-                  ) : (
-                    <Text
-                      style={[styles.saveBtnText, { color: colors.background }]}
-                    >
-                      حفظ
-                    </Text>
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.cancelBtn, { backgroundColor: colors.border }]}
-                  onPress={handleCancel}
-                >
-                  <Text style={[styles.cancelBtnText, { color: colors.text }]}>
-                    إلغاء
+                  <Text
+                    style={[styles.saveBtnText, { color: colors.background }]}
+                  >
+                    تغيير كلمة المرور
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          ) : (
-            <Text style={[styles.infoValue, { color: colors.text }]}>
-              {user?.name || "—"}
-            </Text>
-          )}
-        </View>
-
-        <InfoRow icon="phone" label="رقم الهاتف" value={user?.phone || "—"} />
-
-        <View style={[styles.section, { marginTop: spacing.l }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            تغيير كلمة المرور
-          </Text>
-          <View
-            style={[
-              styles.infoCard,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-            ]}
-          >
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: colors.border,
-                  color: colors.text,
-                },
-              ]}
-              value={oldPassword}
-              onChangeText={setOldPassword}
-              placeholder="كلمة المرور الحالية"
-              placeholderTextColor={colors.textLight}
-              secureTextEntry
-              textAlign="right"
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: colors.border,
-                  color: colors.text,
-                  marginTop: spacing.s,
-                },
-              ]}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              placeholder="كلمة المرور الجديدة"
-              placeholderTextColor={colors.textLight}
-              secureTextEntry
-              textAlign="right"
-            />
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  borderColor: colors.border,
-                  color: colors.text,
-                  marginTop: spacing.s,
-                },
-              ]}
-              value={confirmNewPassword}
-              onChangeText={setConfirmNewPassword}
-              placeholder="تأكيد كلمة المرور الجديدة"
-              placeholderTextColor={colors.textLight}
-              secureTextEntry
-              textAlign="right"
-            />
-            <View style={{ marginTop: spacing.m, alignItems: "flex-end" }}>
-              <TouchableOpacity
-                style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-                onPress={handleChangePassword}
-              >
-                <Text
-                  style={[styles.saveBtnText, { color: colors.background }]}
-                >
-                  تغيير كلمة المرور
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: spacing.l, paddingBottom: spacing.xxxl },
+  content: {
+    paddingHorizontal: spacing.l,
+    paddingTop: spacing.s,
+    paddingBottom: spacing.xxxl,
+  },
   backBtn: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.l,
+    marginBottom: spacing.m,
     gap: spacing.xs,
   },
   backText: { fontWeight: "600", fontSize: 16 },
 
-  avatarSection: { alignItems: "center", marginBottom: spacing.xl },
+  avatarSection: { alignItems: "center", marginBottom: spacing.l },
   avatarCircle: {
     width: 90,
     height: 90,
