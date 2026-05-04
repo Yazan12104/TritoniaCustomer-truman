@@ -103,6 +103,8 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
     switch (status) {
       case "APPROVED":
         return colors.success;
+      case "DELIVERED":
+        return "#0891b2";
       case "REJECTED":
         return colors.error;
       case "PENDING":
@@ -118,6 +120,8 @@ export const TeamOrdersScreen = ({ navigation }: any) => {
     switch (status) {
       case "APPROVED":
         return "تمت_الموافقة";
+      case "DELIVERED":
+        return "تم_التسليم";
       case "REJECTED":
         return "مرفوض";
       case "PENDING":

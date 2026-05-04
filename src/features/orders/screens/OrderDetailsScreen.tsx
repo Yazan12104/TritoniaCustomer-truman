@@ -144,6 +144,8 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
     switch (status) {
       case "APPROVED":
         return colors.success;
+      case "DELIVERED":
+        return "#0891b2";
       case "REJECTED":
         return colors.error;
       case "PENDING":
@@ -190,11 +192,13 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
               ? "قيد الانتظار"
               : order.status === "APPROVED"
                 ? "تمت الموافقة"
-                : order.status === "REJECTED"
-                  ? "مرفوض"
-                  : order.status === "CANCELLED"
-                    ? "ملغي"
-                    : order.status}
+                : order.status === "DELIVERED"
+                  ? "تم التسليم"
+                  : order.status === "REJECTED"
+                    ? "مرفوض"
+                    : order.status === "CANCELLED"
+                      ? "ملغي"
+                      : order.status}
           </Text>
         </View>
       </View>
@@ -500,12 +504,14 @@ export const OrderDetailsScreen = ({ route, navigation }: any) => {
         >
           <Text style={[styles.completedText, { color: colors.text }]}>
             {order.status === "APPROVED"
-              ? "✅ تمت الموافقة على هذا الطلب"
-              : order.status === "REJECTED"
-                ? "❌ تم رفض هذا الطلب"
-                : order.status === "CANCELLED"
-                  ? "🚫 تم إلغاء هذا الطلب"
-                  : ""}
+              ? "⏳ تمت الموافقة — جارٍ التسليم"
+              : order.status === "DELIVERED"
+                ? "✅ تم تسليم طلبك بنجاح"
+                : order.status === "REJECTED"
+                  ? "❌ تم رفض هذا الطلب"
+                  : order.status === "CANCELLED"
+                    ? "🚫 تم إلغاء هذا الطلب"
+                    : ""}
           </Text>
         </View>
       )}

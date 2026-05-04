@@ -1,6 +1,6 @@
 import { Product } from '../../products/types';
 
-export type OrderStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'APPROVED' | 'DELIVERED' | 'REJECTED' | 'CANCELLED';
 
 export interface OrderItem {
   id: string;

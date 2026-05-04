@@ -11,7 +11,7 @@ const mapOrder = (apiData: any): Order => ({
   total_price: Number(apiData.total_price) || 0,
   sold_price: Number(apiData.sold_price) || 0,
   delivery_fee: apiData.delivery_fee ? Number(apiData.delivery_fee) : undefined,
-  status: apiData.status || 'PENDING',
+  status: (apiData.status === 'DELIVRED' ? 'DELIVERED' : apiData.status) || 'PENDING',
   notes: apiData.notes || '',
   coupon_code: apiData.coupon_code,
   discount_percentage: apiData.discount_percentage ? Number(apiData.discount_percentage) : undefined,
