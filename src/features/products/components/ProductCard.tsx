@@ -38,7 +38,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               primaryImage || "https://via.placeholder.com/300x300?text=No+Image",
           }}
           style={styles.image}
-          resizeMode="contain"
+          resizeMode="cover"
         />
       </View>
 
@@ -85,12 +85,12 @@ const styles = StyleSheet.create({
     padding: 0,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#bbb", // Often white background helps product images pop
-    overflow: "hidden", // Ensure zoomed image doesn't bleed
+    backgroundColor: "#f2f2f2",
+    overflow: "hidden",
   },
   image: {
-    width: "117%", // Zoom in a bit to fill the extra height
-    height: "190%", // Keep ratio, zoom in
+    width: "100%",
+    height: "100%",
   },
   content: {
     flex: 1,
