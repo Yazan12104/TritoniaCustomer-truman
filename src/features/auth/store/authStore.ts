@@ -18,6 +18,7 @@ interface AuthState {
 	setError: (error: string | null) => void;
 	updateProfile: (firstName: string, lastName: string) => Promise<void>;
 	changePassword: (oldPassword: string, newPassword: string) => Promise<any>;
+	renewToken: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -68,6 +69,19 @@ export const useAuthStore = create<AuthState>()(
 					const msg = error.response?.data?.message || error.message || 'فشل تغيير كلمة المرور';
 					set({ error: msg, isLoading: false });
 					throw new Error(msg);
+				}
+			},
+			renewToken: async () => {
+				try {
+					const { authApi } = require('../api/authApi');
+					const result = await authApi.refreshToken();
+					if (result.token) {
+						set({ accessToken: result.token, refreshToken: result.token });
+					}
+				} catch (error) {
+					console.error('Renew Token Error:', error);
+					// If renewal fails, we throw the error so apiClient interceptor can catch it and call logout
+					throw error;
 				}
 			},
 		}),

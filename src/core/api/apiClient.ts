@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
 		const originalRequest = error.config;
 		const status = error.response?.status;
 
-		if (status === 401 && !originalRequest._retry) {
+		if (status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/refresh') {
 			// If another refresh is already in flight, queue this request
 			if (isRefreshing) {
 				return new Promise<string>((resolve, reject) => {
@@ -79,6 +79,12 @@ apiClient.interceptors.response.use(
 			} finally {
 				isRefreshing = false;
 			}
+		} else if (status === 401 && originalRequest.url === '/auth/refresh') {
+			const { useAuthStore } = require('../../features/auth/store/authStore');
+			useAuthStore.getState().logout();
+		} else if (status === 400 && error.response?.data?.message === 'Session expired') {
+			const { useAuthStore } = require('../../features/auth/store/authStore');
+			useAuthStore.getState().logout();
 		} else if (status && status >= 500) {
 			// Server error (5xx) - set global error state
 			const { setServerDown } = useGlobalErrorStore.getState();

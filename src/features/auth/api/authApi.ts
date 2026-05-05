@@ -121,6 +121,16 @@ export const authApi = {
 			console.error("Logout Error:", error);
 			throw new Error(error.response?.data?.message || 'فشل تسجيل الخروج');
 		}
+	},
+
+	refreshToken: async (): Promise<{ token: string }> => {
+		try {
+			const response = await apiClient.post('/auth/refresh');
+			return response.data.data;
+		} catch (error: any) {
+			console.error("Refresh Token Error:", error);
+			throw new Error(error.response?.data?.message || 'فشل تجديد الجلسة');
+		}
 	}
 };
 
