@@ -8,6 +8,8 @@ import {
   Alert,
   ScrollView,
   TextInput,
+  Platform,
+  KeyboardAvoidingView
 } from "react-native";
 import { ScreenContainer } from "../../../shared/components/ScreenContainer";
 import { Typography } from "../../../shared/components/Typography";
@@ -169,6 +171,11 @@ export const CheckoutScreen = ({ navigation }: any) => {
   }, [error]);
 
   return (
+        <KeyboardAvoidingView
+          style={{flex: 1}}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
     <ScreenContainer
       scrollable={true}
       contentContainerStyle={styles.screenContent}
@@ -433,6 +440,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
         )}
       </TouchableOpacity>
     </ScreenContainer>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -93,12 +93,11 @@ export const AboutAppScreen = ({ navigation }: any) => {
             color={colors.primary}
             style={styles.cardTitle}
           >
-            رؤيتنا
+            ثقتك .. هدفنا
           </Typography>
         </View>
         <Text style={[styles.cardText, { color: colors.text }]}>
-          نسعى في Tritonia لتقديم حلول تقنية متكاملة تُمكّن الشركات والمسوقين من
-          إدارة أعمالهم بذكاء وسرعة، مع التركيز على الدقة والشفافية في كل خطوة.
+          نسعى في Tritonia لتقديم خدمة مميزة و سهولة في التعامل لضمان تجربة استخدام سلسة
         </Text>
       </View>
 
@@ -128,9 +127,8 @@ export const AboutAppScreen = ({ navigation }: any) => {
         </View>
         <View style={styles.featuresList}>
           {[
-            "إدارة الطلبات والمبيعات فورياً",
-            "إحصائيات متقدمة للنمو والأرباح",
-            "نظام ذكي لإدارة الفروع والمسوقين",
+            "إدارة طلباتك بسهولة من خلال هاتفك ",
+            "إحصائيات متقدمة لأكثر  منتجاتنا طلبا",
             "واجهة مستخدم عصرية وسهلة الاستخدام",
           ].map((feature, index) => (
             <View key={index} style={styles.featureItem}>
@@ -301,7 +299,7 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 15,
     lineHeight: 24,
-    textAlign: "right",
+    textAlign: "left",
     opacity: 0.9,
   },
   featuresList: {
@@ -316,7 +314,7 @@ const styles = StyleSheet.create({
   featureText: {
     fontSize: 14,
     flex: 1,
-    textAlign: "right",
+    textAlign: "left",
   },
   featureDot: {
     width: 6,
@@ -324,7 +322,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   supportDesc: {
-    textAlign: "right",
+    textAlign: "left",
     marginBottom: spacing.l,
     fontSize: 14,
   },
