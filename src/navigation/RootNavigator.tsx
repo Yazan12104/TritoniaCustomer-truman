@@ -6,7 +6,7 @@ import { useAuthStore } from "../features/auth/store/authStore";
 import { useNotificationsStore } from "../features/notifications/store/notificationsStore";
 
 export const RootNavigator = () => {
-  const { accessToken, user, logout } = useAuthStore();
+  const { accessToken, user, logout, renewToken } = useAuthStore();
   const { fetchNotifications } = useNotificationsStore();
 
   // Auto-logout non-customer users (customer-only app)
@@ -20,22 +20,35 @@ export const RootNavigator = () => {
     if (!accessToken || !user || user.role !== "CUSTOMER") return;
 
     let isMounted = true;
-    let timer: ReturnType<typeof setTimeout> | null = null;
     let isFetching = false;
+    let tokenRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const clearTimer = () => {
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
+    const clearTokenRefreshTimer = () => {
+      if (tokenRefreshTimer) {
+        clearTimeout(tokenRefreshTimer);
+        tokenRefreshTimer = null;
       }
     };
 
-    const scheduleNext = () => {
+    const scheduleNextTokenRefresh = () => {
       if (!isMounted || AppState.currentState !== "active") return;
-      const jitterMs = Math.floor(Math.random() * 1000);
-      timer = setTimeout(() => {
-        runFetch();
-      }, 30000 + jitterMs);
+      clearTokenRefreshTimer();
+      const jitterMs = Math.floor(Math.random() * 60000);
+      const refreshIntervalMs = 28 * 60 * 1000;
+      tokenRefreshTimer = setTimeout(() => {
+        runTokenRefresh();
+      }, refreshIntervalMs + jitterMs);
+    };
+
+    const runTokenRefresh = async () => {
+      if (!isMounted || AppState.currentState !== "active") return;
+      try {
+        await renewToken();
+      } catch {
+        // Ignore refresh errors, apiClient will handle 401s
+      } finally {
+        scheduleNextTokenRefresh();
+      }
     };
 
     const runFetch = async () => {
@@ -44,32 +57,35 @@ export const RootNavigator = () => {
       try {
         await fetchNotifications(user.id);
       } catch {
-        // Keep polling even if one request fails.
+        // Ignore fetch errors
       } finally {
         isFetching = false;
-        scheduleNext();
       }
     };
 
     // Initial fetch when app is active and user session is valid.
     runFetch();
+    scheduleNextTokenRefresh();
 
     const appStateSub = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") {
-        if (!timer && !isFetching) {
+        if (!isFetching) {
           runFetch();
         }
+        if (!tokenRefreshTimer) {
+          scheduleNextTokenRefresh();
+        }
       } else {
-        clearTimer();
+        clearTokenRefreshTimer();
       }
     });
 
     return () => {
       isMounted = false;
-      clearTimer();
+      clearTokenRefreshTimer();
       appStateSub.remove();
     };
-  }, [accessToken, user?.id, user?.role, fetchNotifications]);
+  }, [accessToken, user?.id, user?.role, fetchNotifications, renewToken]);
 
   // If accessToken exists AND user is CUSTOMER, show App Navigator
   // Else show Auth Navigator (login/register)
