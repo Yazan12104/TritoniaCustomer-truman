@@ -33,8 +33,10 @@ export const RootNavigator = () => {
     const scheduleNextTokenRefresh = () => {
       if (!isMounted || AppState.currentState !== "active") return;
       clearTokenRefreshTimer();
-      const jitterMs = Math.floor(Math.random() * 60000);
-      const refreshIntervalMs = 28 * 60 * 1000;
+      //reduce the gitter scope
+      const jitterMs = Math.floor(Math.random() * 1900);
+      const refreshIntervalMs = 55  * 1000 * 60 * 3 * 24;
+      console.log("refreshing token sub-task initialized" , refreshIntervalMs + jitterMs);
       tokenRefreshTimer = setTimeout(() => {
         runTokenRefresh();
       }, refreshIntervalMs + jitterMs);
