@@ -13,15 +13,21 @@
       "backgroundColor": "#435816"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tritonia.customer",
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch"]
+      }
     },
     "android": {
+      "package": "com.tritonia.customer",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logos/Logo1.png",
         "backgroundColor": "#435816"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["RECEIVE_BOOT_COMPLETED"]
     },
     "web": {
       "favicon": "./assets/logos/Logo1.png"
