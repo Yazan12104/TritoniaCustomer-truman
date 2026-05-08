@@ -23,7 +23,7 @@ export const SettingsScreen = () => {
     .slice(0, 2);
 
   return (
-    <ScreenContainer scrollable={true}>
+    <ScreenContainer scrollable={true} style={styles.screen}>
       <View style={styles.container}>
         <Typography variant="h2" style={styles.title}>
           الإعدادات
@@ -182,7 +182,8 @@ const SettingsRow = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: spacing.l },
+  screen: { flex: 1 },
+  container: { flex: 1, paddingTop: spacing.xl },
   title: { marginBottom: spacing.l, textAlign: "right" },
 
   profileCard: {

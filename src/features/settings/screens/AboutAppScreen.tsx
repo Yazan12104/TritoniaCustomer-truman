@@ -8,6 +8,7 @@ import {
   Linking,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Typography } from "../../../shared/components/Typography";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing, radii } from "../../../shared/theme/spacing";
@@ -30,23 +31,24 @@ export const AboutAppScreen = ({ navigation }: any) => {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-    >
-      <TouchableOpacity
-        style={styles.backBtn}
-        onPress={() => navigation.goBack()}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
       >
-        <MaterialCommunityIcons
-          name="arrow-right"
-          size={24}
-          color={colors.primary}
-        />
-        <Text style={[styles.backText, { color: colors.primary }]}>
-          الإعدادات
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons
+            name="arrow-right"
+            size={24}
+            color={colors.primary}
+          />
+          <Text style={[styles.backText, { color: colors.primary }]}>
+            الإعدادات
+          </Text>
+        </TouchableOpacity>
 
       <View style={styles.logoWrapper}>
         <View
@@ -224,11 +226,15 @@ export const AboutAppScreen = ({ navigation }: any) => {
           © 2026 Tritonia. جميع الحقوق محفوظة.
         </Typography>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },

@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { GlobalErrorOverlay } from "./src/core/components/GlobalErrorOverlay";
 import { useThemeStore } from "./src/shared/store/themeStore";
@@ -10,13 +11,15 @@ export default function App() {
   const colors = useThemeColors();
 
   return (
-    <NavigationContainer>
-      <StatusBar
-        style={isDarkMode ? "light" : "dark"}
-        backgroundColor={colors.background}
-      />
-      <RootNavigator />
-      <GlobalErrorOverlay />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar
+          style={isDarkMode ? "light" : "dark"}
+          backgroundColor={colors.background}
+        />
+        <RootNavigator />
+        <GlobalErrorOverlay />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
