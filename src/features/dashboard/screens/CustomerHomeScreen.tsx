@@ -48,6 +48,26 @@ export const CustomerHomeScreen = () => {
     fetchStats();
   }, []);
 
+  const formatDateTimePlus3 = (input: unknown) => {
+    const date = input instanceof Date ? input : new Date(input as any);
+    if (Number.isNaN(date.getTime())) return "غير متوفر";
+
+    const plus3 = new Date(date.getTime() + 3 * 60 * 60 * 1000);
+    const pad2 = (n: number) => String(n).padStart(2, "0");
+
+    const yyyy = plus3.getUTCFullYear();
+    const mm = pad2(plus3.getUTCMonth() + 1);
+    const dd = pad2(plus3.getUTCDate());
+    const hour24 = plus3.getUTCHours();
+    const ampm = hour24 >= 12 ? "PM" : "AM";
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    const hh = pad2(hour12);
+    const min = pad2(plus3.getUTCMinutes());
+    const ss = pad2(plus3.getUTCSeconds());
+
+    return `${yyyy}-${mm}-${dd}  ${hh}:${min}:${ss} ${ampm}`;
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchStats();
@@ -91,6 +111,23 @@ export const CustomerHomeScreen = () => {
           data.map((item, index) => {
             const value = Number(item[valueKey]) || 0;
             const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+            const isCreatedAtLabel = labelKey === "created_at" || labelKey === "createdAt";
+            const isNameLabel = labelKey === "name";
+            const labelValue = isCreatedAtLabel
+              ? formatDateTimePlus3(item[labelKey])
+              : (item[labelKey] || "غير متوفر");
+            const displayText = (() => {
+              if (isCreatedAtLabel) return `\u200E${index + 1}. ${labelValue}\u200E`;
+              if (isNameLabel) {
+                const LRI = "\u2066";
+                const RLI = "\u2067";
+                const PDI = "\u2069";
+                const star = index === 0 ? `${LRI}⭐${PDI} ` : "";
+                return `${star}${LRI}${index + 1}.${PDI} ${RLI}${labelValue}${PDI}`;
+              }
+              const star = index === 0 || index ===1 ? "⭐ " : "";
+              return `${star}${index + 1}. ${labelValue}`;
+            })();
 
             return (
               <View
@@ -124,11 +161,11 @@ export const CustomerHomeScreen = () => {
                           color: colors.text,
                           fontWeight: index === 0 ? "bold" : "normal",
                         },
+                        (isCreatedAtLabel || isNameLabel) && { writingDirection: "ltr", textAlign: "left" },
                       ]}
                       numberOfLines={1}
                     >
-                      {index === 0 && <Text style={{ fontSize: 13 }}>⭐ </Text>}
-                      {index + 1}. {item[labelKey] || "غير متوفر"}
+                      {displayText}
                     </Text>
                   </View>
                   <Text style={[styles.rowValue, { color: colors.primary }]}>

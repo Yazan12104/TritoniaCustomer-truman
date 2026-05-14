@@ -1,25 +1,21 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
-  Image,
   ActivityIndicator,
   TouchableOpacity,
   Text,
   Alert,
-  FlatList,
-  Dimensions,
 } from "react-native";
 import { ScreenContainer } from "../../../shared/components/ScreenContainer";
 import { Typography } from "../../../shared/components/Typography";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
 import { productsApi } from "../api/productsApi";
-import { Product, ProductImage } from "../types";
+import { Product } from "../types";
+import { ProductImageCarousel } from "../components/ProductImageCarousel";
 import { useCartStore } from "../../orders/store/cartStore";
 import { useAuthStore } from "../../auth/store/authStore";
-
-const { width } = Dimensions.get("window");
 
 export const ProductDetailsScreen = ({ route, navigation }: any) => {
   const { productId } = route.params;
@@ -27,13 +23,9 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
   const colors = useThemeColors();
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [images, setImages] = useState<ProductImage[]>([]);
+  const [images, setImages] = useState<Product["images"]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [sliderWidth, setSliderWidth] = useState(width);
-
-  const flatListRef = useRef<FlatList>(null);
   const { addToCart } = useCartStore();
 
   const canAddToCart =
@@ -80,78 +72,6 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
     ]);
   };
 
-  const renderImageItem = ({ item }: { item: ProductImage }) => (
-    <View style={[styles.imageSlide, { width: sliderWidth }]}>
-      <Image
-        source={{
-          uri:
-            item.image_url ||
-            "https://via.placeholder.com/600x400?text=No+Image",
-        }}
-        style={styles.fullImage}
-        resizeMode="contain"
-      />
-    </View>
-  );
-
-  const renderImageIndicator = () => {
-    if (images.length <= 1) return null;
-    return (
-      <View style={styles.indicatorContainer}>
-        {images.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicatorDot,
-              { backgroundColor: colors.background + "80" },
-              activeImageIndex === index && [
-                styles.indicatorDotActive,
-                { backgroundColor: colors.primary },
-              ],
-            ]}
-          />
-        ))}
-      </View>
-    );
-  };
-
-  const onScroll = (event: any) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / sliderWidth);
-    const safeIndex = Math.max(0, Math.min(index, images.length - 1));
-    if (safeIndex !== activeImageIndex) {
-      setActiveImageIndex(safeIndex);
-    }
-  };
-
-  const onMomentumScrollEnd = (event: any) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / sliderWidth);
-    const safeIndex = Math.max(0, Math.min(index, images.length - 1));
-
-    if (safeIndex !== activeImageIndex) {
-      setActiveImageIndex(safeIndex);
-    }
-
-    const expectedOffset = safeIndex * sliderWidth;
-    if (Math.abs(offsetX - expectedOffset) > 1) {
-      flatListRef.current?.scrollToOffset({
-        offset: expectedOffset,
-        animated: true,
-      });
-    }
-  };
-
-  const scrollToImage = (index: number) => {
-    if (index >= 0 && index < images.length) {
-      flatListRef.current?.scrollToOffset({
-        offset: index * sliderWidth,
-        animated: true,
-      });
-      setActiveImageIndex(index);
-    }
-  };
-
   if (loading) {
     return (
       <ScreenContainer style={styles.center}>
@@ -181,78 +101,8 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
         </Text>
       </TouchableOpacity>
 
-      <View 
-        style={styles.imageContainer}
-        onLayout={(e) => {
-          if (e.nativeEvent.layout.width > 0) {
-            setSliderWidth(e.nativeEvent.layout.width);
-          }
-        }}
-      >
-        {images.length > 0 ? (
-          <>
-            <FlatList
-              ref={flatListRef}
-              data={images}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              renderItem={renderImageItem}
-              keyExtractor={(item, index) => `${item.id}-${index}`}
-              onScroll={onScroll}
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              scrollEventThrottle={16}
-              style={styles.imageList}
-              initialNumToRender={3}
-              maxToRenderPerBatch={3}
-              windowSize={5}
-              removeClippedSubviews={true}
-            />
-            {renderImageIndicator()}
-
-            <View style={styles.imageCounter}>
-              <Text
-                style={[styles.imageCounterText, { color: colors.background }]}
-              >
-                {activeImageIndex + 1} / {images.length}
-              </Text>
-            </View>
-
-            {images.length > 1 && (
-              <>
-                <TouchableOpacity
-                  style={[styles.navButton, styles.prevButton]}
-                  onPress={() => scrollToImage(activeImageIndex + 1)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.navButtonText, { color: colors.background }]}>‹</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.navButton, styles.nextButton]}
-                  onPress={() => scrollToImage(activeImageIndex - 1)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.navButtonText, { color: colors.background }]}>›</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </>
-        ) : (
-          <View
-            style={[styles.noImageContainer, { backgroundColor: colors.border }]}
-          >
-            <Image
-              source={{
-                uri: "https://via.placeholder.com/600x400?text=No+Image",
-              }}
-              style={styles.fullImage}
-              resizeMode="contain"
-            />
-            <Text style={[styles.noImageText, { color: colors.textLight }]}>
-              لا توجد صور
-            </Text>
-          </View>
-        )}
+      <View style={styles.imageContainer}>
+        <ProductImageCarousel images={images || []} height={300} />
       </View>
 
       <View style={styles.detailsContainer}>
@@ -354,88 +204,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   imageContainer: {
-    position: "relative",
-    height: 300,
     width: "100%",
-  },
-  imageList: {
-    flex: 1,
-  },
-  imageSlide: {
-    width: width,
-    height: 300,
-    justifyContent:"center",
-    alignItems:"center"
-  },
-  fullImage: {
-    width: "100%",
-    height: "100%",
-  },
-  noImageContainer: {
-    width: "100%",
-    height: 300,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  noImageText: {
-    position: "absolute",
-    fontSize: 14,
-  },
-  indicatorContainer: {
-    position: "absolute",
-    bottom: spacing.m,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
-  },
-  indicatorDotActive: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  imageCounter: {
-    position: "absolute",
-    top: spacing.m,
-    left: spacing.m,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    paddingHorizontal: spacing.s,
-    paddingVertical: spacing.xs,
-    borderRadius: spacing.s,
-  },
-  imageCounterText: {
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  navButton: {
-    position: "absolute",
-    top: "50%",
-    transform: [{ translateY: -20 }],
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  prevButton: {
-    right: spacing.m,
-  },
-  nextButton: {
-    left: spacing.m,
-  },
-  navButtonText: {
-    fontSize: 28,
-    fontWeight: "bold",
-    lineHeight: 32,
   },
   detailsContainer: {
     flex: 1,
