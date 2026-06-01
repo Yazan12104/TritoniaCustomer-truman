@@ -21,7 +21,7 @@ export const useBranchesStore = create<BranchesState>((set) => ({
   fetchBranches: async () => {
     set({ isLoading: true });
     try {
-      const response = await apiClient.get('/branches');
+      const response = await apiClient.get('/branches?limit=60');
       const result = response.data.body || response.data.data;
       // Backend returns paginated response: { data: [...], pagination: {...} }
       const branches = result?.data || result;

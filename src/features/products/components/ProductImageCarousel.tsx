@@ -9,11 +9,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  Platform,
+  // Alert,
+  // Platform,
 } from "react-native";
-import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
+// import * as FileSystem from "expo-file-system/legacy";
+// import * as Sharing from "expo-sharing";
 import { ProductImage } from "../types";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
@@ -25,12 +25,13 @@ const LOOP_BLOCK_COUNT = 3;
 
 interface ProductImageCarouselProps {
   images: ProductImage[];
-  height?: number;
+  // height?: number;
 }
 
 const getImageUri = (image?: ProductImage) => image?.image_url || FALLBACK_IMAGE_URI;
 
-export const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ images, height }) => {
+export const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ images }) => {
+  //({ images, height })
   const colors = useThemeColors();
   const scrollViewRef = useRef<ScrollView>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -134,49 +135,49 @@ export const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ imag
   const activeAspectRatio = hasImages
     ? imageAspectRatios[images[activeImageIndex]?.id] || DEFAULT_ASPECT_RATIO
     : DEFAULT_ASPECT_RATIO;
-
-  const containerHeight = height ?? Math.min(
+//const containerHeight = height ?? Math.min
+  const containerHeight = Math.min(
     520,
     Math.max(240, screenWidth / activeAspectRatio)
   );
 
-  const [downloading, setDownloading] = useState(false);
+  // const [downloading, setDownloading] = useState(false);
 
-  const handleDownloadImage = useCallback(async (image: ProductImage) => {
-    setDownloading(true);
-    try {
-      const imageUri = getImageUri(image);
+  // const handleDownloadImage = useCallback(async (image: ProductImage) => {
+  //   setDownloading(true);
+  //   try {
+  //     const imageUri = getImageUri(image);
 
-      if (Platform.OS === "web") {
-        const link = document.createElement("a");
-        link.href = imageUri;
-        link.download = `product_image_${image.id}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        const ext =
-          imageUri.split(".").pop()?.split("?")[0]?.split("#")[0] || "jpg";
-        const filename = `product_image_${image.id}_${Date.now()}.${ext}`;
-        const fileUri = (FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? "") + filename;
+  //     if (Platform.OS === "web") {
+  //       const link = document.createElement("a");
+  //       link.href = imageUri;
+  //       link.download = `product_image_${image.id}.jpg`;
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+  //     } else {
+  //       const ext =
+  //         imageUri.split(".").pop()?.split("?")[0]?.split("#")[0] || "jpg";
+  //       const filename = `product_image_${image.id}_${Date.now()}.${ext}`;
+  //       const fileUri = (FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? "") + filename;
 
-        const downloadResult = await FileSystem.downloadAsync(imageUri, fileUri);
+  //       const downloadResult = await FileSystem.downloadAsync(imageUri, fileUri);
 
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(downloadResult.uri, {
-            mimeType: "image/jpeg",
-            dialogTitle: "حفظ الصورة",
-          });
-        } else {
-          Alert.alert("تنبيه", "مشاركة الملفات غير متاحة على هذا الجهاز");
-        }
-      }
-    } catch (err: any) {
-      Alert.alert("خطأ", err?.message || "فشل في تنزيل الصورة");
-    } finally {
-      setDownloading(false);
-    }
-  }, []);
+  //       if (await Sharing.isAvailableAsync()) {
+  //         await Sharing.shareAsync(downloadResult.uri, {
+  //           mimeType: "image/jpeg",
+  //           dialogTitle: "حفظ الصورة",
+  //         });
+  //       } else {
+  //         Alert.alert("تنبيه", "مشاركة الملفات غير متاحة على هذا الجهاز");
+  //       }
+  //     }
+  //   } catch (err: any) {
+  //     Alert.alert("خطأ", err?.message || "فشل في تنزيل الصورة");
+  //   } finally {
+  //     setDownloading(false);
+  //   }
+  // }, []);
 
   const renderImageItem = useCallback((item: ProductImage, index: number) => {
     return (
@@ -186,7 +187,7 @@ export const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ imag
           style={styles.fullImage}
           resizeMode="contain"
         />
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.downloadButton, { backgroundColor: "rgba(0,0,0,0.6)" }]}
           onPress={() => handleDownloadImage(item)}
           activeOpacity={0.9}
@@ -195,11 +196,11 @@ export const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ imag
           <Text style={styles.downloadButtonText}>
             {downloading ? "..." : "⬇"}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     );
-  }, [handleDownloadImage, downloading]);
-
+  }, []);
+// [handleDownloadImage, downloading]);
   const updateIndices = useCallback(
     (candidateIndex: number) => {
       const safeIndex = Math.max(0, Math.min(candidateIndex, carouselImages.length - 1));
@@ -432,20 +433,20 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     textAlign: "center",
   },
-  downloadButton: {
-    position: "absolute",
-    bottom: spacing.m,
-    left: 50,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 100,
-  },
-  downloadButtonText: {
-    color: "#ffffff",
-    fontSize: 25,
-    fontWeight: "bold",
-  },
+  // downloadButton: {
+  //   position: "absolute",
+  //   bottom: spacing.m,
+  //   left: 50,
+  //   width: 40,
+  //   height: 40,
+  //   borderRadius: 20,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   zIndex: 100,
+  // },
+  // downloadButtonText: {
+  //   color: "#ffffff",
+  //   fontSize: 25,
+  //   fontWeight: "bold",
+  // },
 });
