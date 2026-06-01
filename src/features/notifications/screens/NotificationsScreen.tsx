@@ -38,7 +38,9 @@ export const NotificationsScreen = ({ navigation }: any) => {
   const {
     notifications,
     unreadCount,
+    pagination,
     isLoading,
+    isLoadingMore,
     error,
     fetchNotifications,
     markAllAsRead,
@@ -47,19 +49,25 @@ export const NotificationsScreen = ({ navigation }: any) => {
   const colors = useThemeColors();
 
   useEffect(() => {
-    if (user) fetchNotifications(user.id);
+    if (user) fetchNotifications(user.id, 1, pagination.limit, false);
   }, [user]);
 
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = async () => {
     if (!user) return;
     setRefreshing(true);
-    await fetchNotifications(user.id);
+    await fetchNotifications(user.id, 1, pagination.limit, false);
     setRefreshing(false);
   };
 
   const handleMarkAllRead = async () => {
     if (user) await markAllAsRead(user.id);
+  };
+
+  const handleLoadMore = async () => {
+    if (!user || isLoading || isLoadingMore) return;
+    if (pagination.page >= pagination.pages) return;
+    await fetchNotifications(user.id, pagination.page + 1, pagination.limit, true);
   };
 
   const renderItem = ({ item }: { item: Notification }) => {
@@ -171,8 +179,13 @@ export const NotificationsScreen = ({ navigation }: any) => {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
-        onRefresh={onRefresh}
-        ListEmptyComponent={
+        onRefresh={onRefresh}        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <ActivityIndicator size="small" color={colors.primary} style={styles.loadMoreIndicator} />
+          ) : null
+        }        ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={[styles.emptyText, { color: colors.textLight }]}>
               لا توجد إشعارات.
@@ -245,4 +258,5 @@ const styles = StyleSheet.create({
   cardTime: { fontSize: 12, textAlign: "right" },
   empty: { padding: spacing.xl, alignItems: "center" },
   emptyText: { fontSize: 16 },
+  loadMoreIndicator: { marginVertical: spacing.m },
 });

@@ -25,13 +25,24 @@ let mockNotifications: Notification[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const notificationsApi = {
-  getNotifications: async (userId: string): Promise<Notification[]> => {
+  getNotifications: async (userId: string, page = 1, limit = 20): Promise<{ data: Notification[]; pagination: { total: number; page: number; limit: number; pages: number } }> => {
     try {
       if (USE_MOCK_API) {
         await delay(400);
-        return [...mockNotifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const sortedNotifications = [...mockNotifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const start = (page - 1) * limit;
+        const paginated = sortedNotifications.slice(start, start + limit);
+        return {
+          data: paginated,
+          pagination: {
+            total: sortedNotifications.length,
+            page,
+            limit,
+            pages: Math.max(1, Math.ceil(sortedNotifications.length / limit)),
+          },
+        };
       } else {
-        const response = await apiClient.get('/notifications');
+        const response = await apiClient.get(`/notifications?page=${page}&limit=${limit}`);
         // Backend may return different shapes: array directly, { data: [...] }, { body: [...] }, or { data: { notifications: [...] } }
         const payload = response.data;
         let list: any[] = [];
@@ -42,7 +53,23 @@ export const notificationsApi = {
         else if (Array.isArray(payload.data?.notifications)) list = payload.data.notifications;
         else if (Array.isArray(payload.notifications)) list = payload.notifications;
 
-        return (list || []).map(mapNotification);
+        const pagination =
+          payload?.pagination ||
+          payload?.data?.pagination ||
+          payload?.data?.data?.pagination ||
+          payload?.body?.pagination ||
+          payload?.data?.notifications?.pagination ||
+          payload?.notifications?.pagination || {
+            total: list.length,
+            page,
+            limit,
+            pages: Math.max(1, Math.ceil(list.length / limit)),
+          };
+
+        return {
+          data: (list || []).map(mapNotification),
+          pagination,
+        };
       }
     } catch (error: any) {
       console.error("getNotifications Error:", error);
