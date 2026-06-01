@@ -13,7 +13,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing } from "../../../shared/theme/spacing";
 import { dashboardApi, StatItem } from "../api/dashboardApi";
-
+import { DashboardHeader } from "../components/DashboardHeader";
 export const CustomerHomeScreen = () => {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
@@ -190,14 +190,17 @@ export const CustomerHomeScreen = () => {
           { backgroundColor: colors.surface, borderBottomColor: colors.border },
         ]}
       >
-        <Typography variant="h2" color={colors.primary}>
+        <DashboardHeader
+              title={` مرحباً ${user?.name}`}
+              subtitle="الرئيسية"
+            />
+        {/* <Typography variant="h2" color={colors.primary}>
           الرئيسية
         </Typography>
         <Typography variant="body" color={colors.textLight}>
           مرحباً {user?.name}
-        </Typography>
-      </View>
-
+        </Typography> */}
+        </View>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -243,8 +246,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: spacing.l,
-    paddingTop: spacing.xxl,
+    padding: 5,
+    paddingTop: 5,
     borderBottomWidth: 1,
   },
   content: {
