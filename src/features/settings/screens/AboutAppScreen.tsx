@@ -220,7 +220,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
           Powered by <Text style={{ color: colors.primary, fontWeight: "bold" }}>Dev_Hub Team</Text>
         </Typography>
         <Typography variant="body" color={colors.textLight} style={styles.versionText}>
-          الإصدار 1.0.0
+          الإصدار 1.0.2
         </Typography>
         <Typography variant="body" color={colors.textLight + "80"} style={styles.copyright}>
           © 2026 Tritonia. جميع الحقوق محفوظة.

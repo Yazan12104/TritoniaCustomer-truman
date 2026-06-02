@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -23,9 +23,14 @@ interface LoginScreenProps {
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, onNavigateToForgotPassword }) => {
   const { setAuth, setLoading, setError, isLoading, error } = useAuthStore();
   const colors = useThemeColors();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const handleLogin = async (phone: string, password?: string) => {
+    if (isSubmittingRef.current) return;
     try {
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
       setLoading(true);
       setError(null);
       const response = await authApi.login({ phone, password });
@@ -34,6 +39,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, 
       setError(err.message || "حدث خطأ أثناء تسجيل الدخول");
     } finally {
       setLoading(false);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -79,7 +86,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, 
           >
             <LoginForm
               onSubmit={handleLogin}
-              isLoading={isLoading}
+              isLoading={isLoading || isSubmitting}
               error={error}
             />
 

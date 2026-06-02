@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -29,6 +29,8 @@ interface RegisterScreenProps {
 export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogin }) => {
   const { setAuth, setLoading, setError, isLoading, error } = useAuthStore();
   const colors = useThemeColors();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -104,8 +106,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
 
   const handleRegister = async () => {
     if (!validateForm()) return;
+    if (isSubmittingRef.current) return;
 
     try {
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
       setLoading(true);
       setError(null);
       const response = await authApi.register({
@@ -119,6 +124,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       setError(err.message || "حدث خطأ أثناء إنشاء الحساب");
     } finally {
       setLoading(false);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -236,8 +243,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
             <Button
               title="إنشاء الحساب"
               onPress={handleRegister}
-              loading={isLoading}
-              disabled={!isFormReady}
+              loading={isLoading || isSubmitting}
+              disabled={!isFormReady || isSubmitting}
               style={styles.submitButton}
             />
 
