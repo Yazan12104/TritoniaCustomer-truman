@@ -70,7 +70,9 @@ export const AboutAppScreen = ({ navigation }: any) => {
           Tritonia
         </Typography>
         <Typography variant="body" color={colors.textLight}>
-          نظم عملك.. طور مستقبلك
+          <Text style={{ fontSize: 20  }}>
+              حيث نعزز جمالك بعملنا
+          </Text>
         </Typography>
       </View>
 
