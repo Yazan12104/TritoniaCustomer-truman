@@ -2,6 +2,15 @@ import { apiClient } from '../../../core/api/apiClient';
 import { USE_MOCK_API } from '../../../config/env';
 import { AuthResponse, LoginCredentials } from '../types';
 
+interface RegisterPayload {
+	first_name: string;
+	last_name: string;
+	phone: string;
+	password: string;
+	question: string;
+	answer: string;
+}
+
 // Mapper to normalize backend response to frontend types
 const mapAuthResponse = (apiData: any): AuthResponse => {
 	// Support both nested `data` envelope and direct properties matching the User request
@@ -17,6 +26,7 @@ const mapAuthResponse = (apiData: any): AuthResponse => {
 			branch_id: userPayload.branch_id,
 			branch_name: userPayload.branch_name,
 			employee_id: userPayload.employee_id,
+			governorate_id: userPayload.governorate_id ?? responseData.governorate_id ?? null,
 		},
 		accessToken: responseData.accessToken || responseData.token || '',
 		refreshToken: responseData.refreshToken || responseData.token || '',
@@ -39,6 +49,7 @@ export const authApi = {
 								name: 'مدير النظام',
 								phone: credentials.phone,
 								role: 'ADMIN',
+								governorate_id: null,
 							},
 							accessToken: 'mock-jwt-token-123',
 							refreshToken: 'mock-refresh-token-123',
@@ -65,7 +76,7 @@ export const authApi = {
 		}
 	},
 
-	register: async (data: { first_name: string; last_name: string; phone: string; password: string }): Promise<AuthResponse> => {
+	register: async (data: RegisterPayload): Promise<AuthResponse> => {
 		try {
 			if (USE_MOCK_API) {
 				return await new Promise((resolve) => {
@@ -76,6 +87,7 @@ export const authApi = {
 								name: `${data.first_name} ${data.last_name}`,
 								phone: data.phone,
 								role: 'CUSTOMER',
+								governorate_id: null,
 							},
 							accessToken: 'mock-jwt-token-customer',
 							refreshToken: 'mock-refresh-token-customer',
@@ -99,6 +111,7 @@ export const authApi = {
 						name: `${data.first_name} ${data.last_name}`,
 						phone: responseData.phone || data.phone,
 						role: responseData.role || 'CUSTOMER',
+						governorate_id: responseData.governorate_id ?? null,
 					},
 					accessToken: responseData.token || response.data.token || '',
 					refreshToken: responseData.token || response.data.token || '',
@@ -107,6 +120,96 @@ export const authApi = {
 		} catch (error: any) {
 			console.error("Register Error:", error);
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "فشل إنشاء الحساب");
+		}
+	},
+
+	getForgotPasswordQuestion: async (phone: string): Promise<{ question: string }> => {
+		try {
+			if (USE_MOCK_API) {
+				return await new Promise((resolve, reject) => {
+					setTimeout(() => {
+						if (!phone) {
+							reject(new Error("رقم الهاتف مطلوب"));
+							return;
+						}
+						resolve({ question: "ما هو لونك المفضل؟" });
+					}, 700);
+				});
+			}
+			const response = await apiClient.get(`/auth/forgot-password/question/${phone}`);
+
+
+
+			if (response.data.success === false) {
+				throw new Error(response.data.error || response.data.message || 'Failed to fetch question');
+			}
+
+			return response.data.data;
+		} catch (error: any) {
+			console.error("Forgot Password Question Error:", error);
+			throw new Error(error.response?.data?.error || error.response?.data?.message || "تعذر جلب سؤال الأمان");
+		}
+	},
+
+	answerForgotPasswordQuestion: async (payload: {
+		phone: string;
+		question: string;
+		answer: string;
+	}): Promise<{ reset_key: string }> => {
+		try {
+			if (USE_MOCK_API) {
+				return await new Promise((resolve, reject) => {
+					setTimeout(() => {
+						if (payload.answer.trim().toLowerCase() !== "red") {
+							reject(new Error("الإجابة غير صحيحة"));
+							return;
+						}
+						resolve({
+							reset_key: 'mock-reset-key-123',
+						});
+					}, 700);
+				});
+			}
+
+			const response = await apiClient.post('/auth/forgot-password/answer', payload);
+			if (response.data.success === false) {
+				throw new Error(response.data.error || response.data.message || 'Failed to verify answer');
+			}
+
+			return response.data.data;
+		} catch (error: any) {
+			console.error("Forgot Password Answer Error:", error);
+			throw new Error(error.response?.data?.error || error.response?.data?.message || "الإجابة غير صحيحة");
+		}
+	},
+
+	resetForgotPassword: async (payload: {
+		reset_key: string;
+		new_password: string;
+		confirmed_password: string;
+	}): Promise<{ message: string }> => {
+		try {
+			if (USE_MOCK_API) {
+				return await new Promise((resolve, reject) => {
+					setTimeout(() => {
+						if (payload.new_password !== payload.confirmed_password) {
+							reject(new Error("كلمتا المرور غير متطابقتين"));
+							return;
+						}
+						resolve({ message: "تم تغيير كلمة المرور بنجاح" });
+					}, 700);
+				});
+			}
+
+			const response = await apiClient.post('/auth/forgot-password/reset', payload);
+			if (response.data.success === false) {
+				throw new Error(response.data.error || response.data.message || 'Failed to reset password');
+			}
+
+			return response.data.data;
+		} catch (error: any) {
+			console.error("Forgot Password Reset Error:", error);
+			throw new Error(error.response?.data?.error || error.response?.data?.message || "فشل تغيير كلمة المرور");
 		}
 	},
 

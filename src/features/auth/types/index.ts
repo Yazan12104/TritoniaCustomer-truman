@@ -8,6 +8,7 @@ export interface User {
 	employee_id?: string;
 	branch_id?: string;
 	branch_name?: string;
+	governorate_id?: string | null;
 }
 
 export interface AuthResponse {

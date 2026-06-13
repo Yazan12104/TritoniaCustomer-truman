@@ -1,7 +1,6 @@
-// api/governoratesApi.ts (نسخة مبسطة)
 import { apiClient } from '../../../core/api/apiClient';
 import { USE_MOCK_API } from '../../../config/env';
-import { Governorate } from '../types';
+import { Governorate, PaginatedResponse } from '../types';
 
 const MOCK_GOVERNORATES: Governorate[] = [
   { id: '972d654c-a4e9-4c78-b241-88bdeb83eb21', name: 'حلب' },
@@ -12,28 +11,77 @@ const MOCK_GOVERNORATES: Governorate[] = [
 ];
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const reportDebug = (hypothesisId: string, location: string, msg: string, data?: Record<string, unknown>) =>
+  fetch("http://10.123.72.83:7777/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sessionId: "customer-governorate-400",
+      runId: "pre-fix",
+      hypothesisId,
+      location,
+      msg,
+      data,
+      ts: Date.now(),
+    }),
+  }).catch(() => {});
 
 export const governoratesApi = {
-  getGovernorates: async (): Promise<Governorate[]> => {
+  getGovernorates: async (
+    page: number = 1,
+    limit: number = 20
+  ): Promise<PaginatedResponse<Governorate>> => {
     try {
+      // #region debug-point E:get-governorates-request
+      reportDebug("E", "governoratesApi.ts:31", "[DEBUG] requesting governorates page", {
+        page,
+        limit,
+        mock: USE_MOCK_API,
+      });
+      // #endregion
       if (USE_MOCK_API) {
         await delay(500);
-        return MOCK_GOVERNORATES;
+        return {
+          data: MOCK_GOVERNORATES.slice((page - 1) * limit, page * limit),
+          pagination: {
+            total: MOCK_GOVERNORATES.length,
+            page,
+            limit,
+            pages: Math.max(1, Math.ceil(MOCK_GOVERNORATES.length / limit)),
+          },
+        };
       }
-      
-      const response = await apiClient.get('/governorates');
-      
-      // استخراج البيانات حسب هيكل الباك إند
-      // الهيكل: { success: true, body: { data: [...] }, message: '...' }
-      const governorates = response.data?.body?.data || response.data?.data || [];
-      
-      console.log('✅ Governorates loaded:', governorates.length);
-      return governorates;
-      
+
+      const response = await apiClient.get(`/governorates?page=${page}&limit=${limit}`);
+      const body = response.data?.body || response.data?.data || {};
+      const data = body?.data || [];
+      const pagination = body?.pagination || {
+        total: data.length,
+        page,
+        limit,
+        pages: 1,
+      };
+
+      return { data, pagination };
     } catch (error: any) {
       console.error("getGovernorates Error:", error);
-      // Return mock data as fallback
-      return MOCK_GOVERNORATES;
+      return {
+        data: MOCK_GOVERNORATES.slice((page - 1) * limit, page * limit),
+        pagination: {
+          total: MOCK_GOVERNORATES.length,
+          page,
+          limit,
+          pages: Math.max(1, Math.ceil(MOCK_GOVERNORATES.length / limit)),
+        },
+      };
     }
+  },
+
+  updateMyGovernorate: async (governorateId: string): Promise<{ id: string; governorate_id: string }> => {
+    const response = await apiClient.patch('/customers/me/governorate', {
+      governorate_id: governorateId,
+    });
+
+    return response.data?.data || response.data?.body || response.data;
   },
 };

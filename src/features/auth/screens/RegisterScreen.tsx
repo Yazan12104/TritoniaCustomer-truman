@@ -21,6 +21,7 @@ import {
   getSyrianPhoneNumberValidationError,
   validateSyrianPhoneNumber,
 } from "../../../utils/phoneNumberValidator";
+import { normalizeUserText } from "../../../utils/normalizeUserText";
 
 interface RegisterScreenProps {
   onNavigateToLogin: () => void;
@@ -37,8 +38,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  const normalizedQuestion = normalizeUserText(question);
+  const normalizedAnswer = normalizeUserText(answer);
 
   const isFormReady =
     !!firstName.trim() &&
@@ -46,6 +52,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
     !!phone.trim() &&
     !!password &&
     !!confirmPassword &&
+    !!normalizedQuestion &&
+    !!normalizedAnswer &&
     password.length >= 6 &&
     password === confirmPassword &&
     validateSyrianPhoneNumber(phone.trim());
@@ -100,6 +108,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       setValidationError("كلمتا المرور غير متطابقتين");
       return false;
     }
+    if (!normalizedQuestion) {
+      setValidationError("سؤال الأمان مطلوب");
+      return false;
+    }
+    if (!normalizedAnswer) {
+      setValidationError("إجابة سؤال الأمان مطلوبة");
+      return false;
+    }
     setValidationError(null);
     return true;
   };
@@ -118,6 +134,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
         last_name: lastName.trim(),
         phone: phone.trim(),
         password,
+        question: normalizedQuestion,
+        answer: normalizedAnswer,
       });
       setAuth(response.user, response.accessToken, response.refreshToken);
     } catch (err: any) {
@@ -232,6 +250,29 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               secureTextEntry
               autoCapitalize="none"
               error={validationError && password !== confirmPassword ? validationError : undefined}
+            />
+
+            <Input
+              label="سؤال الأمان"
+              placeholder="مثال: ما هو لونك المفضل؟"
+              value={question}
+              onChangeText={(value) => {
+                setQuestion(value);
+                setValidationError(null);
+              }}
+              error={validationError && !question.trim() ? validationError : undefined}
+            />
+
+            <Input
+              label="إجابة سؤال الأمان"
+              placeholder="أدخل الإجابة التي ستستخدمها لاستعادة كلمة المرور"
+              value={answer}
+              onChangeText={(value) => {
+                setAnswer(value);
+                setValidationError(null);
+              }}
+              autoCapitalize="none"
+              error={validationError && !answer.trim() ? validationError : undefined}
             />
 
             {(error || (validationError && validationError !== phoneError)) && (

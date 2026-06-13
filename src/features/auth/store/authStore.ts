@@ -16,6 +16,7 @@ interface AuthState {
 	logout: () => void;
 	setLoading: (isLoading: boolean) => void;
 	setError: (error: string | null) => void;
+	updateUser: (updates: Partial<User>) => void;
 	updateProfile: (firstName: string, lastName: string) => Promise<void>;
 	changePassword: (oldPassword: string, newPassword: string) => Promise<any>;
 	renewToken: () => Promise<void>;
@@ -35,6 +36,10 @@ export const useAuthStore = create<AuthState>()(
 			logout: () => set({ user: null, accessToken: null, refreshToken: null, error: null }),
 			setLoading: (isLoading) => set({ isLoading }),
 			setError: (error) => set({ error, isLoading: false }),
+			updateUser: (updates) =>
+				set((state) => ({
+					user: state.user ? { ...state.user, ...updates } : state.user,
+				})),
 
 			updateProfile: async (firstName: string, lastName: string) => {
 				set({ isLoading: true, error: null });

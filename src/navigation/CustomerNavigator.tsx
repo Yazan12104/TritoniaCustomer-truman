@@ -13,6 +13,8 @@ import { useThemeColors } from "../shared/theme/colors";
 import { SettingsScreen } from "../features/settings/screens/SettingsScreen";
 import { ProfileScreen } from "../features/settings/screens/ProfileScreen";
 import { AboutAppScreen } from "../features/settings/screens/AboutAppScreen";
+import { GovernorateRequiredModal } from "../features/customers/components/GovernorateRequiredModal";
+import { useAuthStore } from "../features/auth/store/authStore";
 import {
   CustomerTabParamList,
   CustomerHomeStackParamList,
@@ -86,107 +88,143 @@ const SettingsStackScreen = () => (
   </SettingsStack.Navigator>
 );
 
+const reportDebug = (hypothesisId: string, location: string, msg: string, data?: Record<string, unknown>) =>
+  fetch("http://10.123.72.83:7777/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sessionId: "customer-governorate-400",
+      runId: "pre-fix",
+      hypothesisId,
+      location,
+      msg,
+      data,
+      ts: Date.now(),
+    }),
+  }).catch(() => {});
+
 export const CustomerNavigator = () => {
   const colors = useThemeColors();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const shouldRequireGovernorate =
+    Boolean(accessToken) &&
+    user?.role === "CUSTOMER" &&
+    !user?.governorate_id;
+
+  React.useEffect(() => {
+    // #region debug-point B:customer-governorate-state
+    reportDebug("B", "CustomerNavigator.tsx:108", "[DEBUG] customer navigator governorate gate evaluated", {
+      role: user?.role ?? null,
+      userId: user?.id ?? null,
+      hasAccessToken: Boolean(accessToken),
+      governorateId: user?.governorate_id ?? null,
+      shouldRequireGovernorate,
+    });
+    // #endregion
+  }, [accessToken, shouldRequireGovernorate, user?.governorate_id, user?.id, user?.role]);
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textLight,
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: "700",
-          marginBottom: 4,
-        },
-        tabBarStyle: {
-          height: 70,
-          paddingBottom: 8,
-          backgroundColor: colors.surface,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        },
-        tabBarItemStyle: {
-          borderRadius: 12,
-          marginHorizontal: 2,
-          marginVertical: 4,
-          height: 62,
-        },
-        tabBarActiveBackgroundColor: colors.primary + "15",
-        tabBarIcon: () => null,
-      }}
-    >
-      <Tab.Screen
-        name="HomeTab"
-        component={HomeStackScreen}
-        options={{
-          title: "الرئيسية",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/home.png")}
-              style={{ width: 22, height: 22, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
+    <>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textLight,
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: "700",
+            marginBottom: 4,
+          },
+          tabBarStyle: {
+            height: 70,
+            paddingBottom: 8,
+            backgroundColor: colors.surface,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          },
+          tabBarItemStyle: {
+            borderRadius: 12,
+            marginHorizontal: 2,
+            marginVertical: 4,
+            height: 62,
+          },
+          tabBarActiveBackgroundColor: colors.primary + "15",
+          tabBarIcon: () => null,
         }}
-      />
-      <Tab.Screen
-        name="ProductsTab"
-        component={ProductsStackScreen}
-        options={{
-          title: "المنتجات",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/inventory.png")}
-              style={{ width: 25, height: 25, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="CartTab"
-        component={CartStackScreen}
-        options={{
-          title: "السلة",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/products.png")}
-              style={{ width: 25, height: 25, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="OrdersTab"
-        component={OrdersStackScreen}
-        options={{
-          title: "الطلبات",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/orders.png")}
-              style={{ width: 25, height: 25, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="SettingsTab"
-        component={SettingsStackScreen}
-        options={{
-          title: "إعدادات",
-          tabBarIcon: ({ color }) => (
-            <Image
-              source={require("../../assets/icons/setting.png")}
-              style={{ width: 25, height: 25, tintColor: color }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+      >
+        <Tab.Screen
+          name="HomeTab"
+          component={HomeStackScreen}
+          options={{
+            title: "الرئيسية",
+            tabBarIcon: ({ color }) => (
+              <Image
+                source={require("../../assets/icons/home.png")}
+                style={{ width: 22, height: 22, tintColor: color }}
+                resizeMode="contain"
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="ProductsTab"
+          component={ProductsStackScreen}
+          options={{
+            title: "المنتجات",
+            tabBarIcon: ({ color }) => (
+              <Image
+                source={require("../../assets/icons/inventory.png")}
+                style={{ width: 25, height: 25, tintColor: color }}
+                resizeMode="contain"
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="CartTab"
+          component={CartStackScreen}
+          options={{
+            title: "السلة",
+            tabBarIcon: ({ color }) => (
+              <Image
+                source={require("../../assets/icons/products.png")}
+                style={{ width: 25, height: 25, tintColor: color }}
+                resizeMode="contain"
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="OrdersTab"
+          component={OrdersStackScreen}
+          options={{
+            title: "الطلبات",
+            tabBarIcon: ({ color }) => (
+              <Image
+                source={require("../../assets/icons/orders.png")}
+                style={{ width: 25, height: 25, tintColor: color }}
+                resizeMode="contain"
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="SettingsTab"
+          component={SettingsStackScreen}
+          options={{
+            title: "إعدادات",
+            tabBarIcon: ({ color }) => (
+              <Image
+                source={require("../../assets/icons/setting.png")}
+                style={{ width: 25, height: 25, tintColor: color }}
+                resizeMode="contain"
+              />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+      <GovernorateRequiredModal visible={Boolean(shouldRequireGovernorate)} />
+    </>
   );
 };
