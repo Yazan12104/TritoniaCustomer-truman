@@ -11,20 +11,6 @@ const MOCK_GOVERNORATES: Governorate[] = [
 ];
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-const reportDebug = (hypothesisId: string, location: string, msg: string, data?: Record<string, unknown>) =>
-  fetch("http://10.123.72.83:7777/event", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sessionId: "customer-governorate-400",
-      runId: "pre-fix",
-      hypothesisId,
-      location,
-      msg,
-      data,
-      ts: Date.now(),
-    }),
-  }).catch(() => {});
 
 export const governoratesApi = {
   getGovernorates: async (
@@ -32,13 +18,6 @@ export const governoratesApi = {
     limit: number = 20
   ): Promise<PaginatedResponse<Governorate>> => {
     try {
-      // #region debug-point E:get-governorates-request
-      reportDebug("E", "governoratesApi.ts:31", "[DEBUG] requesting governorates page", {
-        page,
-        limit,
-        mock: USE_MOCK_API,
-      });
-      // #endregion
       if (USE_MOCK_API) {
         await delay(500);
         return {

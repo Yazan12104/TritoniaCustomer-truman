@@ -15,7 +15,7 @@ import { useThemeColors } from "../../../shared/theme/colors";
 import { spacing, radii } from "../../../shared/theme/spacing";
 import { Button } from "../../../shared/components/Button";
 import { Input } from "../../../shared/components/Input";
-import { SUPPORT_PHONE_NUMBER, TELEGRAM_ID } from "../../../config/env";
+import { SUPPORT_PHONE_NUMBER, TELEGRAM_PHONE_NUMBER } from "../../../config/env";
 import { Ionicons } from "@expo/vector-icons";
 import { authApi } from "../api/authApi";
 import {
@@ -52,8 +52,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
   };
 
   const handleTelegramSupport = () => {
-    const username = TELEGRAM_ID.replace('@', '');
-    Linking.openURL(`https://t.me/${username}`);
+    Linking.openURL(`https://t.me/+${TELEGRAM_PHONE_NUMBER}`);
   };
 
   const clearStepFeedback = () => {
@@ -221,7 +220,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
         <View style={styles.contactInfo}>
           <Typography variant="caption" color={colors.textLight}>تيليجرام</Typography>
           <Typography variant="subtitle" color={colors.text} weight="600">
-            {TELEGRAM_ID}
+            {TELEGRAM_PHONE_NUMBER}
           </Typography>
         </View>
       </TouchableOpacity>

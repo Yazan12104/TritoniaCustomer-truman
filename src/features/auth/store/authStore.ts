@@ -98,6 +98,11 @@ export const useAuthStore = create<AuthState>()(
 				accessToken: state.accessToken,
 				refreshToken: state.refreshToken,
 			}),
+			merge: (persistedState, currentState) => {
+				const persisted = persistedState as Partial<AuthState> | undefined;
+				if (currentState.accessToken || currentState.user) return currentState;
+				return { ...currentState, ...(persisted || {}) };
+			},
 		}
 	)
 );

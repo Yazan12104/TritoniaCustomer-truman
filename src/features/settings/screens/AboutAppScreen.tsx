@@ -21,11 +21,11 @@ export const AboutAppScreen = ({ navigation }: any) => {
   const colors = useThemeColors();
 
   const openWhatsApp = () => {
-    Linking.openURL("whatsapp://send?phone=963954795509");
+    Linking.openURL("whatsapp://send?phone=963998124547");
   };
 
   const openTelegram = () => {
-    Linking.openURL("https://t.me/+963933853718").catch(() => {
+    Linking.openURL("https://t.me/+963998124547").catch(() => {
       Linking.openURL("tg://resolve?domain=...");
     });
   };
@@ -97,7 +97,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
             color={colors.primary}
             style={styles.cardTitle}
           >
-            ثقتك .. هدفنا
+            حيث نعزز جمالك بعلمنا
           </Typography>
         </View>
         <Text style={[styles.cardText, { color: colors.text }]}>
@@ -187,7 +187,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
               تواصل عبر تليجرام
             </Text>
             <Text style={[styles.contactValue, { color: colors.textLight }]}>
-              +963 933 853 718
+               +963 998 124 547
             </Text>
           </View>
           <View style={[styles.iconBox, { backgroundColor: "#0088cc" }]}>
@@ -207,7 +207,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
               تواصل عبر واتساب
             </Text>
             <Text style={[styles.contactValue, { color: colors.textLight }]}>
-              +963 954 795 509
+              +963 998 124 547
             </Text>
           </View>
           <View style={[styles.iconBox, { backgroundColor: "#25D366" }]}>
@@ -222,7 +222,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
           Powered by <Text style={{ color: colors.primary, fontWeight: "bold" }}>Dev_Hub Team</Text>
         </Typography>
         <Typography variant="body" color={colors.textLight} style={styles.versionText}>
-          الإصدار 1.0.2
+          الإصدار 1.1.5
         </Typography>
         <Typography variant="body" color={colors.textLight + "80"} style={styles.copyright}>
           © 2026 Tritonia. جميع الحقوق محفوظة.

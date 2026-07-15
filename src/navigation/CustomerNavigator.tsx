@@ -88,41 +88,16 @@ const SettingsStackScreen = () => (
   </SettingsStack.Navigator>
 );
 
-const reportDebug = (hypothesisId: string, location: string, msg: string, data?: Record<string, unknown>) =>
-  fetch("http://10.123.72.83:7777/event", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sessionId: "customer-governorate-400",
-      runId: "pre-fix",
-      hypothesisId,
-      location,
-      msg,
-      data,
-      ts: Date.now(),
-    }),
-  }).catch(() => {});
-
 export const CustomerNavigator = () => {
   const colors = useThemeColors();
   const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const governorateId = user?.governorate_id;
+  const hasGovernorate = Boolean(governorateId && governorateId !== "null");
   const shouldRequireGovernorate =
     Boolean(accessToken) &&
     user?.role === "CUSTOMER" &&
-    !user?.governorate_id;
-
-  React.useEffect(() => {
-    // #region debug-point B:customer-governorate-state
-    reportDebug("B", "CustomerNavigator.tsx:108", "[DEBUG] customer navigator governorate gate evaluated", {
-      role: user?.role ?? null,
-      userId: user?.id ?? null,
-      hasAccessToken: Boolean(accessToken),
-      governorateId: user?.governorate_id ?? null,
-      shouldRequireGovernorate,
-    });
-    // #endregion
-  }, [accessToken, shouldRequireGovernorate, user?.governorate_id, user?.id, user?.role]);
+    !hasGovernorate;
 
   return (
     <>
