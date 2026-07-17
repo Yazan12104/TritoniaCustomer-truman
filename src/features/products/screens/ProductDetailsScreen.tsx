@@ -131,7 +131,7 @@ export const ProductDetailsScreen = ({ route, navigation }: any) => {
                 : { color: colors.error },
             ]}
           >
-            {product.in_stock ? "متوفر" : "غير متوفر"}
+            {product.in_stock ? "متوفر" : "غير_متوفر"}
           </Text>
 
         </View>

@@ -8,6 +8,25 @@ export interface Branch {
   is_active?: boolean;
 }
 
+const normalizeBranchActivity = (value: unknown) => {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'false' || normalized === '0' || normalized === 'inactive') return false;
+    if (normalized === 'true' || normalized === '1' || normalized === 'active') return true;
+  }
+  return Boolean(value);
+};
+
+const mapBranch = (branch: any): Branch => ({
+  id: branch.id,
+  name: branch.name,
+  governorate: branch.governorate,
+  is_active: normalizeBranchActivity(branch.is_active),
+});
+
 interface BranchesState {
   branches: Branch[];
   isLoading: boolean;
@@ -25,7 +44,10 @@ export const useBranchesStore = create<BranchesState>((set) => ({
       const result = response.data.body || response.data.data;
       // Backend returns paginated response: { data: [...], pagination: {...} }
       const branches = result?.data || result;
-      set({ branches: Array.isArray(branches) ? branches : [], isLoading: false });
+      set({
+        branches: Array.isArray(branches) ? branches.map(mapBranch) : [],
+        isLoading: false,
+      });
     } catch (error) {
       console.error('Failed to fetch branches:', error);
       set({ branches: [], isLoading: false });

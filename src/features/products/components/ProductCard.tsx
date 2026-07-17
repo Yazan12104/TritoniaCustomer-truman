@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 product.in_stock ? { color: colors.success } : { color: colors.error },
               ]}
             >
-              {product.in_stock ? "متوفر" : "غير متوفر"}
+              {product.in_stock ? "متوفر" : "غير_متوفر"}
             </Text>
           </View>
         </View>
