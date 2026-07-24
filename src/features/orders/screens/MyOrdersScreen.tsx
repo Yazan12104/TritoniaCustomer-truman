@@ -68,6 +68,14 @@ export const MyOrdersScreen = ({ navigation }: any) => {
     fetchOrders(1);
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchOrders(1, period, customStart, customEnd, true);
+    });
+
+    return unsubscribe;
+  }, [navigation, period, customStart, customEnd]);
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchOrders(1, period, customStart, customEnd, true);

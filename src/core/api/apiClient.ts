@@ -2,6 +2,17 @@ import axios from 'axios';
 import { API_URL } from '../../config/env';
 import { useGlobalErrorStore } from '../store/globalErrorStore';
 
+const WRITE_METHODS = new Set(['post', 'put', 'patch']);
+
+export const isNetworkError = (error: any) =>
+        !error?.response &&
+        (error?.code === 'ERR_NETWORK' || /network error/i.test(error?.message || ''));
+
+export const isWriteNetworkError = (error: any) => {
+        const method = error?.config?.method?.toLowerCase();
+        return isNetworkError(error) && WRITE_METHODS.has(method);
+};
+
 export const apiClient = axios.create({
 	baseURL: API_URL,
 	headers: {

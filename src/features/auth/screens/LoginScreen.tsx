@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -26,6 +26,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
+  useEffect(() => {
+    setError(null);
+    return () => {
+      setError(null);
+    };
+  }, [setError]);
+
   const handleLogin = async (phone: string, password?: string) => {
     if (isSubmittingRef.current) return;
     try {
@@ -42,6 +49,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, 
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
+  };
+
+  const handleNavigateToForgotPassword = () => {
+    setError(null);
+    onNavigateToForgotPassword?.();
+  };
+
+  const handleNavigateToRegister = () => {
+    setError(null);
+    onNavigateToRegister?.();
   };
 
   return (
@@ -88,12 +105,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, 
               onSubmit={handleLogin}
               isLoading={isLoading || isSubmitting}
               error={error}
+              onInputChange={() => setError(null)}
             />
 
             {onNavigateToForgotPassword && (
               <TouchableOpacity 
                 style={styles.forgotPasswordContainer} 
-                onPress={onNavigateToForgotPassword}
+                onPress={handleNavigateToForgotPassword}
               >
                 <Typography variant="body" color={colors.primary} style={styles.forgotPasswordText}>
                   نسيت كلمة المرور؟
@@ -106,7 +124,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onNavigateToRegister, 
                 <Typography variant="body" color={colors.textLight}>
                   ليس لديك حساب؟
                 </Typography>
-                <TouchableOpacity onPress={onNavigateToRegister}>
+                <TouchableOpacity onPress={handleNavigateToRegister}>
                   <Typography variant="body" color={colors.primary} style={styles.registerLink}>
                     إنشاء حساب جديد
                   </Typography>

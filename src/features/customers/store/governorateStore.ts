@@ -88,7 +88,7 @@ export const useGovernorateStore = create<GovernorateState>((set, get) => ({
         };
       }
       set({ isSubmitting: false, error: message });
-      throw new Error(message);
+      throw err;
     }
   },
 }));

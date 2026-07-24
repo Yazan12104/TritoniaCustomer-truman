@@ -3,6 +3,7 @@ import { Order, CreateOrderInput } from '../types';
 import { ordersApi } from '../api/ordersApi';
 import { Customer } from '../../customers/types';
 import { DeliveryPoint } from '../../branches/types';
+import { isWriteNetworkError } from '../../../core/api/apiClient';
 
 interface OrderState {
   orders: Order[];
@@ -100,6 +101,10 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       set({ isLoading: false });
       return result.id;
     } catch (err: any) {
+      if (isWriteNetworkError(err)) {
+        set({ isLoading: false, error: null });
+        return '__assumed_success__';
+      }
       set({ error: err.message, isLoading: false });
       return null;
     }

@@ -2,7 +2,7 @@ import React from "react";
 import { Text, TextProps, StyleSheet } from "react-native";
 import { useThemeColors } from "../theme/colors";
 
-type TypographyVariant = "h1" | "h2" | "h3" | "subtitle" | "body" | "caption";
+type TypographyVariant = "h1" | "h2" | "h3" |"h4" |"subtitle" | "body" | "caption";
 
 interface TypographyProps extends TextProps {
   variant?: TypographyVariant;
@@ -55,6 +55,11 @@ const styles = StyleSheet.create({
   },
   h3: {
     fontSize: 20,
+    fontWeight: "bold",
+    writingDirection: "rtl",
+  },
+    h4: {
+    fontSize: 16,
     fontWeight: "bold",
     writingDirection: "rtl",
   },

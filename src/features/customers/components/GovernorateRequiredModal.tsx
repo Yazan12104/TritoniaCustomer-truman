@@ -14,6 +14,7 @@ import { useThemeColors } from "../../../shared/theme/colors";
 import { radii, spacing } from "../../../shared/theme/spacing";
 import { useGovernorateStore } from "../store/governorateStore";
 import { useAuthStore } from "../../auth/store/authStore";
+import { isWriteNetworkError } from "../../../core/api/apiClient";
 
 interface GovernorateRequiredModalProps {
   visible: boolean;
@@ -24,6 +25,7 @@ export const GovernorateRequiredModal: React.FC<GovernorateRequiredModalProps> =
 }) => {
   const colors = useThemeColors();
   const [selectedGovernorateId, setSelectedGovernorateId] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   const {
     governorates,
     isLoading,
@@ -40,6 +42,7 @@ export const GovernorateRequiredModal: React.FC<GovernorateRequiredModalProps> =
   useEffect(() => {
     if (!visible) {
       setSelectedGovernorateId(null);
+      setLocalError(null);
       resetGovernorates();
       return;
     }
@@ -58,10 +61,15 @@ export const GovernorateRequiredModal: React.FC<GovernorateRequiredModalProps> =
     try {
       const result = await updateMyGovernorate(selectedGovernorateId);
       updateUser({ governorate_id: result.governorate_id });
-    } catch {
-      // Store error already handles the user-facing message.
+    } catch (err: any) {
+      if (isWriteNetworkError(err)) {
+        setSelectedGovernorateId(null);
+        setLocalError("حدث خطأ ما، يرجى اختيار المحافظة مرة أخرى.");
+      }
     }
   };
+
+  const displayedError = localError || error;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => {}}>
@@ -124,7 +132,10 @@ export const GovernorateRequiredModal: React.FC<GovernorateRequiredModalProps> =
                   return (
                     <TouchableOpacity
                       activeOpacity={0.85}
-                      onPress={() => setSelectedGovernorateId(item.id)}
+                      onPress={() => {
+                        setSelectedGovernorateId(item.id);
+                        setLocalError(null);
+                      }}
                       style={[
                         styles.option,
                         {
@@ -170,7 +181,9 @@ export const GovernorateRequiredModal: React.FC<GovernorateRequiredModalProps> =
             </Text>
           )}
 
-          {!!error && <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>}
+          {!!displayedError && (
+            <Text style={[styles.errorText, { color: colors.error }]}>{displayedError}</Text>
+          )}
 
           <Button
             title="تأكيد المحافظة"

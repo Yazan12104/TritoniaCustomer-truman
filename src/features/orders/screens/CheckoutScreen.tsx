@@ -157,8 +157,12 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
     if (orderId) {
       clearCart();
+      if (orderId === "__assumed_success__") {
+        navigation.navigate("OrdersTab", { screen: "MyOrdersScreen" });
+        return;
+      }
       Alert.alert("نجاح", "تم إرسال طلبك بنجاح!", [
-        { text: "حسناً", onPress: () => navigation.navigate("OrdersTab") },
+        { text: "حسناً", onPress: () => navigation.navigate("OrdersTab", { screen: "MyOrdersScreen" }) },
       ]);
     }
   };
@@ -388,8 +392,10 @@ export const CheckoutScreen = ({ navigation }: any) => {
         <Typography variant="h3" color={colors.primary} style={styles.sectionTitle}>
           4. ملاحظات على الطلب
         </Typography>
+                <Typography variant="h4" color={colors.primary} style={styles.noteHint}>
+       الرجاء اضافة رقم احتياطي للتواصل
+        </Typography>
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>ملاحظات:</Text>
           <TextInput
             style={[
               styles.input,
@@ -404,7 +410,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
             numberOfLines={3}
             value={notes}
             onChangeText={setNotes}
-            placeholder="أضف أي ملاحظات هنا..."
+            placeholder="أضف أي ملاحظات هنا ... مثال : رقم الهاتف الاحتياطي \ نقطة علاَم للتوصيل"
             placeholderTextColor={colors.textLight}
             textAlign="right"
           />
@@ -500,7 +506,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     marginBottom: 4,
-    textAlign: "right",
+    textAlign: "left",
   },
   input: {
     borderWidth: 1,
@@ -573,6 +579,11 @@ const styles = StyleSheet.create({
   couponHint: {
     fontSize: 11,
     textAlign: "right",
+    marginTop: spacing.s,
+  },
+    noteHint: {
+    fontSize: 13,
+    textAlign: "left",
     marginTop: spacing.s,
   },
   couponApplied: {

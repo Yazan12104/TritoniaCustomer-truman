@@ -1,6 +1,8 @@
-import { apiClient } from '../../../core/api/apiClient';
+import { apiClient, isNetworkError, isWriteNetworkError } from '../../../core/api/apiClient';
 import { USE_MOCK_API } from '../../../config/env';
 import { AuthResponse, LoginCredentials } from '../types';
+
+const GENERIC_AUTH_NETWORK_ERROR = 'حدث خطأ ما، يرجى المحاولة مرة أخرى';
 
 interface RegisterPayload {
 	first_name: string;
@@ -72,6 +74,9 @@ export const authApi = {
 			}
 		} catch (error: any) {
 			console.error("Login Error:", error);
+                        if (isNetworkError(error)) {
+                                throw new Error(GENERIC_AUTH_NETWORK_ERROR);
+                        }
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "بيانات الاعتماد غير صالحة");
 		}
 	},
@@ -119,6 +124,11 @@ export const authApi = {
 			}
 		} catch (error: any) {
 			console.error("Register Error:", error);
+                        if (isWriteNetworkError(error)) {
+                                const registerNetworkError = new Error('REGISTER_NETWORK_ERROR');
+                                (registerNetworkError as any).code = 'REGISTER_NETWORK_ERROR';
+                                throw registerNetworkError;
+                        }
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "فشل إنشاء الحساب");
 		}
 	},
@@ -147,6 +157,9 @@ export const authApi = {
 			return response.data.data;
 		} catch (error: any) {
 			console.error("Forgot Password Question Error:", error);
+                        if (isNetworkError(error)) {
+                                throw new Error(GENERIC_AUTH_NETWORK_ERROR);
+                        }
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "تعذر جلب سؤال الأمان");
 		}
 	},
@@ -179,6 +192,9 @@ export const authApi = {
 			return response.data.data;
 		} catch (error: any) {
 			console.error("Forgot Password Answer Error:", error);
+                        if (isNetworkError(error)) {
+                                throw new Error(GENERIC_AUTH_NETWORK_ERROR);
+                        }
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "الإجابة غير صحيحة");
 		}
 	},
@@ -209,6 +225,9 @@ export const authApi = {
 			return response.data.data;
 		} catch (error: any) {
 			console.error("Forgot Password Reset Error:", error);
+                        if (isNetworkError(error)) {
+                                throw new Error(GENERIC_AUTH_NETWORK_ERROR);
+                        }
 			throw new Error(error.response?.data?.error || error.response?.data?.message || "فشل تغيير كلمة المرور");
 		}
 	},

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -33,6 +33,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
+  useEffect(() => {
+    setError(null);
+    return () => {
+      setError(null);
+    };
+  }, [setError]);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -61,6 +68,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
   const handlePhoneChange = (value: string) => {
     setPhone(value);
     setValidationError(null);
+    setError(null);
 
     if (!value.trim()) {
       setPhoneError(null);
@@ -139,6 +147,12 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
       });
       setAuth(response.user, response.accessToken, response.refreshToken);
     } catch (err: any) {
+      if (err?.code === "REGISTER_NETWORK_ERROR") {
+        setValidationError(null);
+        setError(null);
+        onNavigateToLogin();
+        return;
+      }
       setError(err.message || "حدث خطأ أثناء إنشاء الحساب");
     } finally {
       setLoading(false);
@@ -198,6 +212,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               onChangeText={(value) => {
                 setFirstName(value);
                 setValidationError(null);
+                setError(null);
               }}
               autoCapitalize="words"
               error={validationError && !firstName ? validationError : undefined}
@@ -210,6 +225,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               onChangeText={(value) => {
                 setLastName(value);
                 setValidationError(null);
+                setError(null);
               }}
               autoCapitalize="words"
               error={validationError && !lastName ? validationError : undefined}
@@ -233,6 +249,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               onChangeText={(value) => {
                 setPassword(value);
                 setValidationError(null);
+                setError(null);
               }}
               secureTextEntry
               autoCapitalize="none"
@@ -246,6 +263,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               onChangeText={(value) => {
                 setConfirmPassword(value);
                 setValidationError(null);
+                setError(null);
               }}
               secureTextEntry
               autoCapitalize="none"
@@ -259,6 +277,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               onChangeText={(value) => {
                 setQuestion(value);
                 setValidationError(null);
+                setError(null);
               }}
               error={validationError && !question.trim() ? validationError : undefined}
             />
@@ -270,6 +289,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               onChangeText={(value) => {
                 setAnswer(value);
                 setValidationError(null);
+                setError(null);
               }}
               autoCapitalize="none"
               error={validationError && !answer.trim() ? validationError : undefined}
@@ -293,7 +313,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onNavigateToLogi
               <Typography variant="body" color={colors.textLight}>
                 لديك حساب بالفعل؟
               </Typography>
-              <TouchableOpacity onPress={onNavigateToLogin}>
+              <TouchableOpacity
+                onPress={() => {
+                  setError(null);
+                  setValidationError(null);
+                  onNavigateToLogin();
+                }}
+              >
                 <Typography variant="body" color={colors.primary} style={styles.loginLink}>
                   تسجيل الدخول
                 </Typography>

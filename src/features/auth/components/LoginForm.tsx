@@ -8,9 +8,10 @@ interface LoginFormProps {
   onSubmit: (phone: string, password?: string) => void;
   isLoading: boolean;
   error?: string | null;
+  onInputChange?: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, error }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, error, onInputChange }) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   
@@ -24,7 +25,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, error
         label="رقم الهاتف"
         placeholder="أدخل رقم الهاتف"
         value={phone}
-        onChangeText={setPhone}
+        onChangeText={(value) => {
+          setPhone(value);
+          onInputChange?.();
+        }}
         keyboardType="phone-pad"
         autoCapitalize="none"
         autoCorrect={false}
@@ -34,7 +38,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, error
         label="كلمة المرور"
         placeholder="أدخل كلمة المرور"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(value) => {
+          setPassword(value);
+          onInputChange?.();
+        }}
         secureTextEntry
         autoCapitalize="none"
       />
