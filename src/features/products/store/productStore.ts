@@ -7,10 +7,11 @@ interface ProductState {
   categories: Category[];
   activeCategoryId: string | null;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
   pagination: { total: number; page: number; limit: number; pages: number } | null;
 
-  fetchData: (page?: number) => Promise<void>;
+  fetchData: (page?: number, append?: boolean) => Promise<void>;
   setActiveCategory: (categoryId: string | null) => void;
   getFilteredProducts: () => Product[];
 }
@@ -20,15 +21,21 @@ export const useProductStore = create<ProductState>((set, get) => ({
   categories: [],
   activeCategoryId: null,
   isLoading: false,
+  isLoadingMore: false,
   error: null,
   pagination: null,
 
-  fetchData: async (page = 1) => {
-    set({ isLoading: true, error: null });
+  fetchData: async (page = 1, append = false) => {
+    if (page === 1) {
+      set({ isLoading: true, error: null });
+    } else {
+      set({ isLoadingMore: true, error: null });
+    }
+
     try {
       const [categoriesResult, productsResult] = await Promise.allSettled([
-        productsApi.getCategories(),
-        productsApi.getProducts({ page, limit: 100 }),
+        page === 1 ? productsApi.getCategories() : Promise.resolve(get().categories),
+        productsApi.getProducts({ page, limit: 20 }),
       ]);
 
       let categories: Category[] = [];
@@ -47,20 +54,26 @@ export const useProductStore = create<ProductState>((set, get) => ({
         console.error('Failed to fetch products:', productsResult.reason);
         throw new Error('فشل جلب المنتجات');
       }
-      
-      // التأكد من عدم تكرار المنتجات بسبب الأخطاء في Join أو التكرار في البيانات
+
       const uniqueProducts = products.filter((p, index, self) => 
         index === self.findIndex((t) => t.id === p.id)
       );
 
-      set({ 
-        categories: categories.length > 0 ? categories : get().categories, 
-        products: uniqueProducts, 
-        pagination, 
-        isLoading: false 
+      const nextProducts = append
+        ? [...get().products, ...uniqueProducts].filter((p, index, self) =>
+            index === self.findIndex((t) => t.id === p.id)
+          )
+        : uniqueProducts;
+
+      set({
+        categories: categories.length > 0 ? categories : get().categories,
+        products: nextProducts,
+        pagination,
+        isLoading: false,
+        isLoadingMore: false,
       });
     } catch (err: any) {
-      set({ error: err.message || 'فشل جلب البيانات', isLoading: false });
+      set({ error: err.message || 'فشل جلب البيانات', isLoading: false, isLoadingMore: false });
     }
   },
 

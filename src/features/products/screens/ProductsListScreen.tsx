@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { ScreenContainer } from "../../../shared/components/ScreenContainer";
 import { Typography } from "../../../shared/components/Typography";
@@ -24,11 +25,13 @@ export const ProductsListScreen = ({ navigation }: any) => {
   const {
     categories,
     isLoading,
+    isLoadingMore,
     error,
     fetchData,
     activeCategoryId,
     setActiveCategory,
     getFilteredProducts,
+    pagination,
   } = useProductStore();
   const { user } = useAuthStore();
   const { cartItems } = useCartStore();
@@ -45,8 +48,15 @@ export const ProductsListScreen = ({ navigation }: any) => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchData();
+    await fetchData(1, false);
     setRefreshing(false);
+  };
+
+  const handleLoadMore = () => {
+    if (!pagination || isLoading || isLoadingMore) return;
+    if (pagination.page >= pagination.pages) return;
+
+    fetchData(pagination.page + 1, true);
   };
 
   const filteredProducts = getFilteredProducts();
@@ -164,6 +174,8 @@ export const ProductsListScreen = ({ navigation }: any) => {
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.productList}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -178,6 +190,13 @@ export const ProductsListScreen = ({ navigation }: any) => {
               لا توجد منتجات في هذا القسم.
             </Typography>
           </View>
+        }
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : null
         }
       />
     </ScreenContainer>
@@ -198,6 +217,7 @@ const styles = StyleSheet.create({
     gap: spacing.m,
   },
   emptyContainer: { padding: spacing.xl, alignItems: "center" },
+  footerLoader: { paddingVertical: spacing.m, alignItems: "center" },
   fab: {
     position: "absolute",
     bottom: spacing.xl,
