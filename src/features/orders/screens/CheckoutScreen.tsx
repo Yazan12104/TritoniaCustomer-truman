@@ -395,6 +395,9 @@ export const CheckoutScreen = ({ navigation }: any) => {
                 <Typography variant="h4" color={colors.primary} style={styles.noteHint}>
        الرجاء اضافة رقم احتياطي للتواصل
         </Typography>
+        <Typography variant="h4" color={colors.primary} style={styles.noteHint}>
+          يرجى كتابة عنوان تفصيلي
+        </Typography>
         <View style={styles.inputGroup}>
           <TextInput
             style={[

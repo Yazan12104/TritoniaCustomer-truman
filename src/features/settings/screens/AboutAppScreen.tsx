@@ -71,7 +71,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
         </Typography>
         <Typography variant="body" color={colors.textLight}>
           <Text style={{ fontSize: 20  }}>
-              حيث نعزز جمالك بعملنا
+              حيث نعزز جمالك بعلمنا
           </Text>
         </Typography>
       </View>
@@ -97,7 +97,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
             color={colors.primary}
             style={styles.cardTitle}
           >
-            حيث نعزز جمالك بعلمنا
+            رؤيتنا
           </Typography>
         </View>
         <Text style={[styles.cardText, { color: colors.text }]}>
@@ -222,7 +222,7 @@ export const AboutAppScreen = ({ navigation }: any) => {
           Powered by <Text style={{ color: colors.primary, fontWeight: "bold" }}>Dev_Hub Team</Text>
         </Typography>
         <Typography variant="body" color={colors.textLight} style={styles.versionText}>
-          الإصدار 1.1.7
+          الإصدار1.3.3
         </Typography>
         <Typography variant="body" color={colors.textLight + "80"} style={styles.copyright}>
           © 2026 Tritonia. جميع الحقوق محفوظة.
