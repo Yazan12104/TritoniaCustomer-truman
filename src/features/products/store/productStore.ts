@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Product, Category } from '../types';
 import { productsApi } from '../api/productsApi';
+import { cacheService } from '../../../core/cache/cacheService';
 
 interface ProductState {
   products: Product[];
@@ -11,10 +12,15 @@ interface ProductState {
   error: string | null;
   pagination: { total: number; page: number; limit: number; pages: number } | null;
 
-  fetchData: (page?: number, append?: boolean) => Promise<void>;
+  fetchData: (page?: number, append?: boolean, options?: { force?: boolean }) => Promise<void>;
   setActiveCategory: (categoryId: string | null) => void;
-  getFilteredProducts: () => Product[];
+  invalidateProductsCache: () => Promise<void>;
 }
+
+cacheService.init();
+
+const buildCacheKey = (categoryId: string | null, page: number): string =>
+  `products:${categoryId || 'all'}:${page}`;
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
@@ -25,8 +31,42 @@ export const useProductStore = create<ProductState>((set, get) => ({
   error: null,
   pagination: null,
 
-  fetchData: async (page = 1, append = false) => {
-    if (page === 1) {
+  fetchData: async (page = 1, append = false, options?: { force?: boolean }) => {
+    const force = options?.force ?? false;
+    const { activeCategoryId } = get();
+    const cacheKey = buildCacheKey(activeCategoryId, page);
+
+    if (!force && page === 1 && !append) {
+      const cached = cacheService.get<{ products: Product[]; pagination: ProductState['pagination'] }>(cacheKey);
+      if (cached) {
+        set({
+          products: cached.products,
+          pagination: cached.pagination,
+          isLoading: false,
+          isLoadingMore: false,
+          error: null,
+        });
+        return;
+      }
+    }
+
+    if (!force && append && page > 1) {
+      const cached = cacheService.get<{ products: Product[]; pagination: ProductState['pagination'] }>(cacheKey);
+      if (cached) {
+        set({
+          products: [...get().products, ...cached.products].filter(
+            (p, index, self) => index === self.findIndex((t) => t.id === p.id)
+          ),
+          pagination: cached.pagination,
+          isLoading: false,
+          isLoadingMore: false,
+          error: null,
+        });
+        return;
+      }
+    }
+
+    if (page === 1 && !append) {
       set({ isLoading: true, error: null });
     } else {
       set({ isLoadingMore: true, error: null });
@@ -35,7 +75,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       const [categoriesResult, productsResult] = await Promise.allSettled([
         page === 1 ? productsApi.getCategories() : Promise.resolve(get().categories),
-        productsApi.getProducts({ page, limit: 20 }),
+        productsApi.getProducts({ page, limit: 20, categoryId: activeCategoryId || undefined }),
       ]);
 
       let categories: Category[] = [];
@@ -55,7 +95,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         throw new Error('فشل جلب المنتجات');
       }
 
-      const uniqueProducts = products.filter((p, index, self) => 
+      const uniqueProducts = products.filter((p, index, self) =>
         index === self.findIndex((t) => t.id === p.id)
       );
 
@@ -72,18 +112,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
         isLoading: false,
         isLoadingMore: false,
       });
+
+      cacheService.set(cacheKey, { products: uniqueProducts, pagination });
     } catch (err: any) {
       set({ error: err.message || 'فشل جلب البيانات', isLoading: false, isLoadingMore: false });
     }
   },
 
   setActiveCategory: (categoryId) => {
-    set({ activeCategoryId: categoryId });
+    if (get().activeCategoryId === categoryId) return;
+    set({ activeCategoryId: categoryId, products: [], pagination: null, error: null });
+    get().fetchData(1, false);
   },
 
-  getFilteredProducts: () => {
-    const { products, activeCategoryId } = get();
-    if (!activeCategoryId) return products;
-    return products.filter((p) => p.category_id === activeCategoryId);
+  invalidateProductsCache: async () => {
+    await cacheService.invalidate('products:');
   },
 }));

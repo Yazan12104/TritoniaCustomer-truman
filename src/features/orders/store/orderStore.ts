@@ -98,10 +98,17 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         branch_id: branchId,
         delivery_point_id: selectedDeliveryPoint.id,
       });
+
+      const { useProductStore } = require('../../products/store/productStore');
+      useProductStore.getState().invalidateProductsCache();
+
       set({ isLoading: false });
       return result.id;
     } catch (err: any) {
       if (isWriteNetworkError(err)) {
+        const { useProductStore } = require('../../products/store/productStore');
+        useProductStore.getState().invalidateProductsCache();
+
         set({ isLoading: false, error: null });
         return '__assumed_success__';
       }

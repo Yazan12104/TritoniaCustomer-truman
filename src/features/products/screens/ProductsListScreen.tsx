@@ -24,13 +24,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 export const ProductsListScreen = ({ navigation }: any) => {
   const {
     categories,
+    products,
     isLoading,
     isLoadingMore,
     error,
     fetchData,
     activeCategoryId,
     setActiveCategory,
-    getFilteredProducts,
     pagination,
   } = useProductStore();
   const { user } = useAuthStore();
@@ -48,7 +48,7 @@ export const ProductsListScreen = ({ navigation }: any) => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchData(1, false);
+    await fetchData(1, false, { force: true });
     setRefreshing(false);
   };
 
@@ -59,7 +59,9 @@ export const ProductsListScreen = ({ navigation }: any) => {
     fetchData(pagination.page + 1, true);
   };
 
-  const filteredProducts = getFilteredProducts();
+  const handleSelectCategory = (categoryId: string | null) => {
+    setActiveCategory(categoryId);
+  };
 
   if (isLoading && categories.length === 0) {
     return (
@@ -120,7 +122,7 @@ export const ProductsListScreen = ({ navigation }: any) => {
             <CategoryBadge
               label={item.name}
               isActive={activeCategoryId === item.id}
-              onPress={() => setActiveCategory(item.id)}
+              onPress={() => handleSelectCategory(item.id)}
             />
           )}
           contentContainerStyle={styles.categoriesList}
@@ -157,7 +159,7 @@ export const ProductsListScreen = ({ navigation }: any) => {
       )}
 
       <FlatList
-        data={filteredProducts}
+        data={products}
         keyExtractor={(item) => item.id}
         numColumns={1}
         renderItem={({ item }) => (
@@ -185,11 +187,17 @@ export const ProductsListScreen = ({ navigation }: any) => {
           />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Typography variant="body" color={colors.textLight}>
-              لا توجد منتجات في هذا القسم.
-            </Typography>
-          </View>
+          isLoading ? (
+            <View style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Typography variant="body" color={colors.textLight}>
+                لا توجد منتجات في هذا القسم.
+              </Typography>
+            </View>
+          )
         }
         ListFooterComponent={
           isLoadingMore ? (

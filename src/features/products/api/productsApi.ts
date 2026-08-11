@@ -62,7 +62,14 @@ export const productsApi = {
   },
 
   getProducts: async (params?: { page?: number; limit?: number; categoryId?: string }): Promise<{ products: Product[]; pagination: any }> => {
-    const response = await apiClient.get('/products', { params: { page: params?.page || 1, limit: params?.limit || 20 } });
+    const queryParams: Record<string, string> = {
+      page: String(params?.page || 1),
+      limit: String(params?.limit || 20),
+    };
+    if (params?.categoryId) {
+      queryParams.category_id = params.categoryId;
+    }
+    const response = await apiClient.get('/products', { params: queryParams });
     const data = response.data.data || response.data;
     const products = data.products || data || [];
     return {
