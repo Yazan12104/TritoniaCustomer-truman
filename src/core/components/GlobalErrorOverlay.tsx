@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useGlobalErrorStore } from '../store/globalErrorStore';
@@ -9,7 +9,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export const GlobalErrorOverlay = () => {
   const { isServerDown, isOffline, clearServerDown, setOffline } = useGlobalErrorStore();
+  const isMounted = useRef(true);
+  const [isRetrying, setIsRetrying] = useState(false);
   const colors = useThemeColors();
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Listen to network changes
   useEffect(() => {
@@ -33,33 +41,52 @@ export const GlobalErrorOverlay = () => {
 
   const isServerError = isServerDown && !isOffline;
 
-  const handleRetry = () => {
-    if (isServerError) {
-      clearServerDown();
-      // Try to ping the server to see if it's back up
-      fetch(`${API_URL}/health`, {
+  const handleRetry = async () => {
+    if (isRetrying) return;
+
+    setIsRetrying(true);
+
+    // Ping the server, but guarantee it resolves even if the request hangs
+    const timeoutController = new AbortController();
+    const timeout = setTimeout(() => timeoutController.abort(), 5000);
+
+    let healthy = false;
+    try {
+      const res = await fetch(`${API_URL}/health`, {
         method: 'GET',
         cache: 'no-store',
-      })
-        .then((res) => {
-          if (res.ok) {
-            clearServerDown();
-          }
-        })
-        .catch(() => {
-          // Still unreachable - do nothing
-        });
-    } else if (isOffline) {
-      // Recheck connection
-      NetInfo.fetch().then((state) => {
-        const offline = !state.isConnected || !state.isInternetReachable;
-        setOffline(offline);
+        signal: timeoutController.signal,
       });
+      healthy = res.ok;
+    } catch {
+      healthy = false;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    // Ensure the spinner shows for at least 200ms, so the user can't spam the button
+    const [healthResult] = await Promise.all([healthy, new Promise((r) => setTimeout(r, 200))]);
+
+    if (healthResult && isMounted.current) {
+      if (isServerError) clearServerDown();
+      else if (isOffline) {
+        // Recheck connection
+        NetInfo.fetch().then((state) => {
+          const offline = !state.isConnected || !state.isInternetReachable;
+          setOffline(offline);
+        });
+      }
+    }
+
+    // Always re-enable the button, whether the check succeeded or failed,
+    // so the spinner never loops forever.
+    if (isMounted.current) {
+      setIsRetrying(false);
     }
   };
 
   return (
-    <View style={[styles.overlay, { backgroundColor: isServerError ? '#000' : '#1a1a2e' }]} pointerEvents="box-only">
+    <View style={[styles.overlay, { backgroundColor: isServerError ? '#000' : '#1a1a2e' }]} pointerEvents="box-none">
       <View style={styles.content}>
         {isServerError ? (
           <>
@@ -93,8 +120,13 @@ export const GlobalErrorOverlay = () => {
           style={[styles.retryButton, { backgroundColor: isServerError ? colors.error : (colors.warning || '#FF9800') }]}
           onPress={handleRetry}
           activeOpacity={0.8}
+          disabled={isRetrying}
         >
-          <MaterialCommunityIcons name="reload" size={20} color="#fff" />
+          {isRetrying ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <MaterialCommunityIcons name="reload" size={20} color="#fff" />
+          )}
           <Text style={styles.retryButtonText}>إعادة المحاولة</Text>
         </TouchableOpacity>
 
